@@ -19,9 +19,9 @@ export default function Sidebar() {
           width={50}
           height={50}
         />
-        <span className="text-gray-500 font-bold text-center ">IKPMJ</span>
+        <span className="text-gray-600 font-bold text-center ">IKPMJ</span>
       </Link>
-      <nav className="flex flex-col gap-7 text-neutral-900">
+      <nav className="flex flex-col gap-7 text-gray-700">
         <Link
           href={"/admin"}
           className={pathname === "/admin" ? activeLink : inactiveLink}

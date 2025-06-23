@@ -13,7 +13,7 @@ export default function Login() {
             height={350}
           />
         </div>
-        <div className="w-125 flex items-center justify-center bg-yellow-50">
+        <div className="w-125 flex items-center justify-center bg-yellow-50 rounded-r-md">
           <div className="w-90 h-90  ">
             <h1 className="text-center font-extrabold text-3xl mb-2">
               SIGN IN
@@ -29,15 +29,15 @@ export default function Login() {
               ></input>
               <input
                 type="password"
-                className="w-full mb-8 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-300 bg-white"
+                className="w-full mb-2 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-300 bg-white"
                 placeholder="Password"
               ></input>
             </form>
-            <p className="underline underline-offset-4 text-center text-gray-500">
-              Forget your password?
+            <p className="text-right text-gray-500 text-xs mb-5">
+              forget your password?
             </p>
             <button
-              className="bg-amber-500 w-full px-2 py-2 rounded-md mt-2 text-white text-medium"
+              className="bg-amber-500 w-full px-2 py-2 rounded-md mt-2 text-white text-medium hover:bg-amber-600"
               type="submit"
             >
               Sign In
