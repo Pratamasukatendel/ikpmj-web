@@ -56,7 +56,6 @@ export default function Login() {
               Enter your email to sign in.
             </p>
             <form onSubmit={handleSubmit} action="">
-              {" "}
               <input
               onChange={(e) => setEmail(e.target.value)}
                 type="text"
@@ -86,7 +85,6 @@ export default function Login() {
                 href={"/admin/auth/register"}
                 className="text-blue-500 underline"
               >
-                {" "}
                 Register
               </Link>
             </p>

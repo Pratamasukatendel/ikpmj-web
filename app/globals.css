@@ -24,3 +24,5 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* In your CSS file (e.g., globals.css or a module.css) */

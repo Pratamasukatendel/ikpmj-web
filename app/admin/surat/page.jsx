@@ -1,8 +1,8 @@
 import Sidebar from "@/app/component/admin/sidebar";
 import Navbar from "@/app/component/admin/navbar";
-import TabelLaporan from "@/app/component/admin/tabelLaporan";
+import TabelSurat from "@/app/component/admin/tabelSurat";
 
-export default function Laporan() {
+export default function Surat() {
   return (
     <div className="flex">
       <Sidebar />
@@ -10,7 +10,9 @@ export default function Laporan() {
         <Navbar />
         <div className="h-screen bg-gray-100 p-7">
           <div className=" h-auto w-auto">
-            <h1 className="text-2xl font-bold mb-8 text-gray-600">Laporan</h1>
+            <h1 className="text-2xl font-bold mb-8 text-gray-600">
+              Surat Masuk
+            </h1>
             <div className="flex gap-5 mb-16">
               <button className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-600 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50">
                 Surat Masuk
@@ -52,7 +54,7 @@ export default function Laporan() {
               </button>
             </div>
             {/* tabel */}
-            <TabelLaporan />
+            <TabelSurat />
           </div>
         </div>
       </div>

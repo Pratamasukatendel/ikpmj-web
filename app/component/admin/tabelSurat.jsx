@@ -25,7 +25,7 @@ const initialData = [
   },
 ];
 
-export default function TabelLaporan() {
+export default function TabelSurat() {
   const [kegiatan, setKegiatan] = useState(initialData);
 
   // Fungsi handleHapus dan handleEdit tetap sama, tidak ada perubahan
@@ -47,14 +47,11 @@ export default function TabelLaporan() {
   return (
     // Container utama untuk tabel
     <div className="my-8 overflow-x-auto">
-      {" "}
       {/* <-- Margin atas-bawah dan overflow untuk layar kecil */}
       <div className="shadow-md overflow-hidden">
-        {" "}
         {/* <-- Shadow, sudut melengkung, dan menyembunyikan overflow */}
         <table className="min-w-full bg-white">
           <thead className="bg-gray-100">
-            {" "}
             {/* <-- Header dengan warna latar abu-abu */}
             <tr>
               <th className="w-16 p-4 text-left text-sm font-semibold text-gray-700">
@@ -75,11 +72,9 @@ export default function TabelLaporan() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 text-gray-500">
-            {" "}
             {/* <-- Garis pemisah antar baris */}
             {kegiatan.map((item, index) => (
               <tr key={item.id} className="hover:bg-gray-50">
-                {" "}
                 {/* <-- Efek hover pada baris */}
                 <td className="p-4 whitespace-nowrap">{index + 1}</td>
                 <td className="p-4 whitespace-nowrap">{item.tanggal}</td>
