@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 
 export default function Sidebar() {
   const inactiveLink = "flex gap-2 py-2 px-7";
@@ -83,11 +84,11 @@ export default function Sidebar() {
           ></Image>
           Laporan
         </Link>
-        <Link
-          href={"/admin/auth/login"}
+        <button
+          onClick={() => signOut()}
           className={`${
             pathname.includes("/login") ? activeLink : inactiveLink
-          } mt-52 text-red-500 font-semibold`}
+          } mt-52 text-red-500 font-semibold cursor-pointer hover:text-red-700`}
         >
           <Image
             src="/icons/log-out.svg"
@@ -96,7 +97,7 @@ export default function Sidebar() {
             height={22}
           ></Image>
           Logout
-        </Link>
+        </button>
       </nav>
     </aside>
   );
