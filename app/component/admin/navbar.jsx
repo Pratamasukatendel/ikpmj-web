@@ -1,35 +1,34 @@
+// app/component/admin/navbar.jsx
 import Image from "next/image";
 
 export default function Navbar() {
   return (
-    <div className="bg-white text-amber-400 h-19 ">
-      <div className="flex items-center justify-end gap-2 mr-10 p-1 h-19">
-        <div className="w-10 h-10 rounded-full">
+    // Mengubah tinggi dan padding, serta menambahkan shadow dan border-bottom
+    <div className="bg-white h-auto p-4 border-b border-gray-200">
+      <div className="flex items-center justify-end gap-3 mr-6">
+        {" "}
+        {/* Menyesuaikan gap dan margin kanan */}
+        {/* Profil Picture */}
+        <div className="w-10 h-10 rounded-full overflow-hidden">
+          {" "}
+          {/* Menambahkan overflow-hidden untuk memastikan gambar bulat */}
           <Image
             src="/images/ikpmj.png"
-            alt="IKPMJ Logo"
-            width={50}
+            alt="Profil Admin"
+            width={50} // Sesuaikan width/height agar gambar pas di container 40x40
             height={50}
+            className="object-cover w-full h-full" // Memastikan gambar mengisi container
           />
         </div>
-        <div className="">
-          <p className="font-semibold -mb-1">Admin</p>
-          <span className="text-sm">admin@gmail.com</span>
+        {/* Nama dan Email Admin */}
+        <div className="text-right">
+          {" "}
+          {/* Mengatur teks ke kanan */}
+          <p className="font-semibold text-gray-800 text-base">Admin</p>{" "}
+          {/* Mengubah warna dan ukuran teks */}
+          <span className="text-sm text-gray-600">admin@gmail.com</span>{" "}
+          {/* Mengubah warna teks */}
         </div>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth="1.5"
-          stroke="currentColor"
-          className="size-6"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="m19.5 8.25-7.5 7.5-7.5-7.5"
-          />
-        </svg>
       </div>
     </div>
   );

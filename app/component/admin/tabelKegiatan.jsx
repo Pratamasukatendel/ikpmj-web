@@ -1,6 +1,7 @@
 "use client"; // Tetap diperlukan untuk interaktivitas di Next.js
 
 import React, { useState } from "react";
+import Link from "next/link";
 
 // Data awal sebagai contoh
 const initialData = [
@@ -25,7 +26,7 @@ const initialData = [
   },
 ];
 
-const TabelKegiatan = () => {
+export default function TabelKegiatan() {
   const [kegiatan, setKegiatan] = useState(initialData);
 
   // Fungsi handleHapus dan handleEdit tetap sama, tidak ada perubahan
@@ -47,10 +48,8 @@ const TabelKegiatan = () => {
   return (
     // Container utama untuk tabel
     <div className="my-8 overflow-x-auto">
-      {" "}
       {/* <-- Margin atas-bawah dan overflow untuk layar kecil */}
       <div className="shadow-md overflow-hidden">
-        {" "}
         {/* <-- Shadow, sudut melengkung, dan menyembunyikan overflow */}
         <table className="min-w-full bg-white">
           <thead className="bg-gray-200">
@@ -74,11 +73,9 @@ const TabelKegiatan = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 text-gray-500">
-            {" "}
             {/* <-- Garis pemisah antar baris */}
             {kegiatan.map((item, index) => (
               <tr key={item.id} className="hover:bg-gray-50">
-                {" "}
                 {/* <-- Efek hover pada baris */}
                 <td className="p-4 whitespace-nowrap">{index + 1}</td>
                 <td className="p-4 whitespace-nowrap">{item.tanggal}</td>
@@ -86,12 +83,12 @@ const TabelKegiatan = () => {
                 <td className="p-4 whitespace-nowrap">{item.status}</td>
                 <td className="p-4 whitespace-nowrap">
                   {/* Tombol aksi dengan styling Tailwind */}
-                  <button
-                    onClick={() => handleEdit(item.id)}
-                    className="font-medium text-blue-600 hover:text-blue-800 mr-4 cursor-pointer" // <-- Warna biru dan margin kanan
+                  <Link
+                    href={`/admin/kegiatan/edit/${item.id}`}
+                    className="font-medium text-blue-600 hover:text-blue-800 mr-4 cursor-pointer"
                   >
                     Edit
-                  </button>
+                  </Link>
                   <button
                     onClick={() => handleHapus(item.id)}
                     className="font-medium text-red-600 hover:text-red-800 cursor-pointer" // <-- Warna merah
@@ -106,6 +103,4 @@ const TabelKegiatan = () => {
       </div>
     </div>
   );
-};
-
-export default TabelKegiatan;
+}

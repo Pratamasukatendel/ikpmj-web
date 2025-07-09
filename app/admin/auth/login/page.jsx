@@ -23,7 +23,6 @@ export default function Login() {
               Enter your email to sign in.
             </p>
             <form action="">
-              {" "}
               <input
                 type="text"
                 className="text-gray-500 w-full mb-5 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-300 bg-white"
@@ -48,7 +47,6 @@ export default function Login() {
                 href={"/admin/auth/register"}
                 className="text-blue-500 underline"
               >
-                {" "}
                 Register
               </Link>
             </p>
