@@ -1,6 +1,7 @@
+// app/admin/kegiatan/tambah/page.jsx
 "use client";
 
-import React, { useState } from "react"; // Import useState
+import React, { useState } from "react";
 import Sidebar from "@/app/component/admin/sidebar";
 import Navbar from "@/app/component/admin/navbar";
 import Link from "next/link";
@@ -8,16 +9,24 @@ import Link from "next/link";
 export default function TambahKegiatan() {
   // State untuk menyimpan nilai input form
   const [formData, setFormData] = useState({
-    namaKegiatan: "",
-    tanggalKegiatan: "",
-    keterangan: "",
+    judul: "", // Nama kegiatan
+    deskripsi: "", // Keterangan kegiatan
+    tanggalMulai: "", // Format: YYYY-mm-dd
+    jamMulai: "", // Format: hh:mm
+    tanggalSelesai: "", // Format: YYYY-mm-dd
+    jamSelesai: "", // Format: hh:mm
+    lokasi: "",
+    gambarPoster: null, // Mengubah ini untuk menyimpan objek File, bukan URL
+    status: "Terencana", // Status default
   });
 
   // State untuk pesan status (sukses/error)
   const [statusMessage, setStatusMessage] = useState("");
   const [isError, setIsError] = useState(false);
+  // State untuk loading saat submit
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Handler untuk perubahan input
+  // Handler untuk perubahan input teks dan select
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -26,75 +35,118 @@ export default function TambahKegiatan() {
     }));
   };
 
+  // Handler khusus untuk input file
+  const handleFileChange = (e) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      gambarPoster: e.target.files[0], // Ambil file pertama yang dipilih
+    }));
+  };
+
   // Handler untuk submit form
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Mencegah reload halaman
+    e.preventDefault();
+    setIsSubmitting(true);
     setStatusMessage("Sedang menyimpan...");
     setIsError(false);
 
     try {
-      // Simulasi pengiriman data ke API
-      // Di aplikasi nyata, Anda akan mengirimkan data ke endpoint API Anda,
-      // misalnya: /api/kegiatan (jika Anda membuat API route di Next.js)
-      console.log("Mengirim data kegiatan:", formData);
+      let uploadedImageUrl = "";
+      if (formData.gambarPoster) {
+        // --- SIMULASI UPLOAD FILE ---
+        // Di sini Anda akan mengimplementasikan logika upload file ke server/cloud storage.
+        // Contoh: Menggunakan FormData untuk mengirim file ke API Route Next.js
+        // const uploadFormData = new FormData();
+        // uploadFormData.append('file', formData.gambarPoster);
+        // const uploadResponse = await fetch('/api/upload-gambar', {
+        //   method: 'POST',
+        //   body: uploadFormData,
+        // });
+        // if (!uploadResponse.ok) {
+        //   throw new Error('Gagal mengupload gambar.');
+        // }
+        // const uploadResult = await uploadResponse.json();
+        // uploadedImageUrl = uploadResult.url; // URL gambar yang diupload
 
-      // Contoh fetch API (Anda perlu menyesuaikan URL dan metode)
+        // Simulasi delay upload
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        uploadedImageUrl = `https://placehold.co/600x400/aabbcc/ffffff?text=Poster_Kegiatan_${Date.now()}`;
+        console.log("Simulasi gambar diupload ke:", uploadedImageUrl);
+      }
+
+      // Gabungkan tanggal dan jam menjadi format ISO 8601 (YYYY-MM-DDTHH:mm:ss)
+      const tanggal_mulai = `${formData.tanggalMulai}T${formData.jamMulai}:00`;
+      const tanggal_selesai = `${formData.tanggalSelesai}T${formData.jamSelesai}:00`;
+
+      // Susun data payload sesuai struktur tabel
+      const payload = {
+        judul: formData.judul,
+        deskripsi: formData.deskripsi,
+        tanggal_mulai,
+        tanggal_selesai,
+        lokasi: formData.lokasi,
+        gambar_poster: uploadedImageUrl, // Menggunakan URL gambar yang diupload (simulasi)
+        status: formData.status,
+        user_id: "admin_ikpmj", // Contoh user_id, bisa diambil dari session/auth
+      };
+
+      console.log("Mengirim data kegiatan ke API:", payload);
+
+      // --- SIMULASI PENGIRIMAN DATA KE API ---
       const response = await fetch("/api/kegiatan", {
         // Ganti dengan URL API Anda
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
-        // Jika respons tidak OK (misal status 4xx atau 5xx)
         const errorData = await response.json();
         throw new Error(errorData.message || "Gagal menambahkan kegiatan.");
       }
 
-      // Jika sukses
       setStatusMessage("Kegiatan berhasil ditambahkan!");
       setIsError(false);
-      // Reset form setelah sukses
+
+      // Reset form
       setFormData({
-        namaKegiatan: "",
-        tanggalKegiatan: "",
-        keterangan: "",
+        judul: "",
+        deskripsi: "",
+        tanggalMulai: "",
+        jamMulai: "",
+        tanggalSelesai: "",
+        jamSelesai: "",
+        lokasi: "",
+        gambarPoster: null, // Reset file input
+        status: "Terencana",
       });
-      // Opsional: Redirect ke halaman daftar kegiatan setelah sukses
-      // router.push('/admin/kegiatan');
+
+      // Opsional: Redirect setelah beberapa saat
+      // setTimeout(() => {
+      //   router.push("/admin/kegiatan");
+      // }, 1500);
     } catch (error) {
       console.error("Error saat menambahkan kegiatan:", error);
       setStatusMessage(`Gagal menambahkan kegiatan: ${error.message}`);
       setIsError(true);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      {" "}
-      {/* Menambahkan min-h-screen dan bg-gray-100 di sini */}
       <Sidebar />
       <div className="flex-1 flex flex-col">
-        {" "}
-        {/* Menggunakan flex-1 untuk mengisi sisa lebar */}
         <Navbar />
         <div className="p-7 flex-1 flex flex-col items-center justify-center">
-          {" "}
-          {/* flex-1 agar konten mengisi ruang vertikal */}
           <div className="w-full max-w-2xl">
-            {" "}
-            {/* Menambahkan max-w-2xl untuk lebar form yang terkontrol */}
             <h1 className="text-3xl font-bold text-gray-800 text-center mb-8">
-              {" "}
-              {/* Mengubah ukuran dan warna teks */}
               Tambah Kegiatan Baru
             </h1>
             <div className="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
-              {" "}
-              {/* Mengubah shadow dan menambahkan border */}
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Pesan Status */}
                 {statusMessage && (
@@ -112,74 +164,200 @@ export default function TambahKegiatan() {
                 {/* Nama Kegiatan */}
                 <div className="flex flex-col">
                   <label
-                    htmlFor="namaKegiatan"
+                    htmlFor="judul"
                     className="mb-2 text-gray-700 font-medium"
                   >
                     Nama Kegiatan
                   </label>
                   <input
                     type="text"
-                    id="namaKegiatan"
-                    name="namaKegiatan" // Pastikan name sesuai dengan key di formData
-                    value={formData.namaKegiatan} // Mengikat nilai input ke state
-                    onChange={handleChange} // Menangani perubahan input
+                    id="judul"
+                    name="judul"
+                    value={formData.judul}
+                    onChange={handleChange}
                     required
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors"
                   />
                 </div>
 
-                {/* Tanggal Kegiatan */}
+                {/* Deskripsi */}
                 <div className="flex flex-col">
                   <label
-                    htmlFor="tanggalKegiatan"
+                    htmlFor="deskripsi"
                     className="mb-2 text-gray-700 font-medium"
                   >
-                    Tanggal Kegiatan
-                  </label>
-                  <input
-                    type="date"
-                    id="tanggalKegiatan"
-                    name="tanggalKegiatan" // Pastikan name sesuai dengan key di formData
-                    value={formData.tanggalKegiatan} // Mengikat nilai input ke state
-                    onChange={handleChange} // Menangani perubahan input
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors"
-                  />
-                </div>
-
-                {/* Keterangan */}
-                <div className="flex flex-col">
-                  <label
-                    htmlFor="keterangan"
-                    className="mb-2 text-gray-700 font-medium"
-                  >
-                    Keterangan
+                    Deskripsi
                   </label>
                   <textarea
-                    id="keterangan"
-                    name="keterangan" // Pastikan name sesuai dengan key di formData
-                    value={formData.keterangan} // Mengikat nilai input ke state
-                    onChange={handleChange} // Menangani perubahan input
-                    rows="5" // Menambah tinggi default textarea
+                    id="deskripsi"
+                    name="deskripsi"
+                    value={formData.deskripsi}
+                    onChange={handleChange}
+                    rows="5"
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors"
                   ></textarea>
                 </div>
 
+                {/* Tanggal Mulai */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <label
+                      htmlFor="tanggalMulai"
+                      className="mb-2 text-gray-700 font-medium"
+                    >
+                      Tanggal Mulai
+                    </label>
+                    <input
+                      type="date"
+                      id="tanggalMulai"
+                      name="tanggalMulai"
+                      value={formData.tanggalMulai}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors"
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <label
+                      htmlFor="jamMulai"
+                      className="mb-2 text-gray-700 font-medium"
+                    >
+                      Jam Mulai
+                    </label>
+                    <input
+                      type="time"
+                      id="jamMulai"
+                      name="jamMulai"
+                      value={formData.jamMulai}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors"
+                    />
+                  </div>
+                </div>
+
+                {/* Tanggal Selesai */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <label
+                      htmlFor="tanggalSelesai"
+                      className="mb-2 text-gray-700 font-medium"
+                    >
+                      Tanggal Selesai
+                    </label>
+                    <input
+                      type="date"
+                      id="tanggalSelesai"
+                      name="tanggalSelesai"
+                      value={formData.tanggalSelesai}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors"
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <label
+                      htmlFor="jamSelesai"
+                      className="mb-2 text-gray-700 font-medium"
+                    >
+                      Jam Selesai
+                    </label>
+                    <input
+                      type="time"
+                      id="jamSelesai"
+                      name="jamSelesai"
+                      value={formData.jamSelesai}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors"
+                    />
+                  </div>
+                </div>
+
+                {/* Lokasi */}
+                <div className="flex flex-col">
+                  <label
+                    htmlFor="lokasi"
+                    className="mb-2 text-gray-700 font-medium"
+                  >
+                    Lokasi
+                  </label>
+                  <input
+                    type="text"
+                    id="lokasi"
+                    name="lokasi"
+                    value={formData.lokasi}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors"
+                  />
+                </div>
+
+                {/* Upload Gambar Poster */}
+                <div className="flex flex-col">
+                  <label
+                    htmlFor="gambarPoster"
+                    className="mb-2 text-gray-700 font-medium"
+                  >
+                    Upload Gambar Poster
+                  </label>
+                  <input
+                    type="file" // Mengubah tipe input menjadi file
+                    id="gambarPoster"
+                    name="gambarPoster"
+                    accept="image/*" // Hanya menerima file gambar
+                    onChange={handleFileChange} // Menggunakan handler khusus untuk file
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors"
+                  />
+                  {formData.gambarPoster && (
+                    <p className="mt-2 text-sm text-gray-500">
+                      File terpilih: {formData.gambarPoster.name}
+                    </p>
+                  )}
+                </div>
+
+                {/* Status Kegiatan */}
+                <div className="flex flex-col">
+                  <label
+                    htmlFor="status"
+                    className="mb-2 text-gray-700 font-medium"
+                  >
+                    Status Kegiatan
+                  </label>
+                  <select
+                    id="status"
+                    name="status"
+                    value={formData.status}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors"
+                  >
+                    <option value="Terencana">Terencana</option>
+                    <option value="Aktif">Aktif</option>
+                    <option value="Tertunda">Tertunda</option>
+                    <option value="Selesai">Selesai</option>
+                    <option value="Dibatalkan">Dibatalkan</option>
+                  </select>
+                </div>
+
                 {/* Tombol Aksi */}
                 <div className="flex justify-end gap-4 pt-4">
-                  {" "}
-                  {/* Menambahkan padding-top */}
                   <Link
                     href={"/admin/kegiatan/"}
-                    className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition-colors font-semibold shadow-md" // Mengubah styling tombol
+                    className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors font-semibold shadow-md"
                   >
                     Batal
                   </Link>
                   <button
                     type="submit"
-                    className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-semibold shadow-md" // Mengubah styling tombol
+                    disabled={isSubmitting} // Disable tombol saat submit
+                    className={`px-6 py-2 rounded-lg font-semibold shadow-md transition-colors ${
+                      isSubmitting
+                        ? "bg-teal-400 cursor-not-allowed"
+                        : "bg-teal-600 hover:bg-teal-700"
+                    }`}
                   >
-                    Simpan Kegiatan
+                    {isSubmitting ? "Menyimpan..." : "Simpan Kegiatan"}
                   </button>
                 </div>
               </form>
