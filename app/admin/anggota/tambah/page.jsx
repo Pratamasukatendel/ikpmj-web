@@ -5,8 +5,11 @@ import React, { useState } from "react";
 import Sidebar from "@/app/component/admin/sidebar";
 import Navbar from "@/app/component/admin/navbar";
 import Link from "next/link";
+import { useRouter } from "next/navigation"; // Import useRouter
 
 export default function TambahAnggota() {
+  const router = useRouter(); // Inisialisasi router
+
   // State untuk menyimpan nilai input form
   const [formData, setFormData] = useState({
     nama: "", // Nama Lengkap
@@ -17,7 +20,7 @@ export default function TambahAnggota() {
     email: "", // Email
     alamat: "", // Alamat
     status: "Aktif", // Status anggota (default: Aktif)
-    profileImage: null, // Untuk menyimpan objek File yang diupload
+    profileImage: null, // Untuk menyimpan objek File yang diupload (tidak langsung diupload ke DB)
   });
 
   // State untuk pesan status (sukses/error)
@@ -52,50 +55,49 @@ export default function TambahAnggota() {
 
     try {
       let uploadedImageUrl = "";
+      // Jika ada file gambar yang dipilih, kita akan mengonversinya ke Base64 atau URL objek sementara
+      // Dalam implementasi nyata, Anda akan mengupload ini ke layanan penyimpanan cloud (misal: Cloudinary, Firebase Storage, S3)
+      // Untuk demo ini, kita akan membuat URL placeholder atau menggunakan URL objek jika memungkinkan
       if (formData.profileImage) {
-        // --- SIMULASI UPLOAD FILE GAMBAR PROFIL ---
-        // Di sini Anda akan mengimplementasikan logika upload file ke server/cloud storage.
-        // Contoh: Menggunakan FormData untuk mengirim file ke API Route Next.js
-        // const uploadFormData = new FormData();
-        // uploadFormData.append('file', formData.profileImage);
-        // const uploadResponse = await fetch('/api/upload-profile-image', {
-        //   method: 'POST',
-        //   body: uploadFormData,
-        // });
-        // if (!uploadResponse.ok) {
-        //   throw new Error('Gagal mengupload gambar profil.');
-        // }
-        // const uploadResult = await uploadResponse.json();
-        // uploadedImageUrl = uploadResult.url; // URL gambar yang diupload
+        // Contoh sederhana untuk menampilkan gambar yang dipilih di frontend (bukan upload ke backend)
+        // Jika Anda ingin mengupload ke backend, Anda perlu endpoint API terpisah untuk upload gambar
+        // dan kemudian menyimpan URL yang dikembalikan ke MongoDB.
+        // Untuk saat ini, kita akan menggunakan placeholder atau URL objek sementara.
+        // uploadedImageUrl = URL.createObjectURL(formData.profileImage); // Ini hanya URL lokal di browser
 
-        // Simulasi delay upload
-        await new Promise((resolve) => setTimeout(resolve, 1500));
+        // Untuk konsistensi dengan API yang menerima URL, kita akan membuat placeholder
         uploadedImageUrl = `https://placehold.co/40x40/abcdef/ffffff?text=${formData.nama
           .charAt(0)
-          .toUpperCase()}`; // Placeholder gambar
-        console.log("Simulasi gambar profil diupload ke:", uploadedImageUrl);
+          .toUpperCase()}`;
+        console.log(
+          "Simulasi gambar profil akan diupload, menggunakan placeholder:",
+          uploadedImageUrl
+        );
+      } else {
+        // Jika tidak ada gambar diupload, gunakan placeholder berdasarkan inisial nama
+        uploadedImageUrl = `https://placehold.co/40x40/abcdef/ffffff?text=${formData.nama
+          .charAt(0)
+          .toUpperCase()}`;
       }
 
-      // Susun data payload sesuai struktur tabel anggota
+      // Susun data payload sesuai struktur yang diharapkan oleh API MongoDB Anda
       const payload = {
         nama: formData.nama,
         angkatan: formData.angkatan,
         jurusan: formData.jurusan,
         instansi: formData.instansi,
-        nomor_kontak: formData.nomorKontak, // Sesuaikan dengan nama kolom di DB Anda
+        nomor_kontak: formData.nomorKontak, // Sesuaikan dengan nama field di skema Mongoose
         email: formData.email,
         alamat: formData.alamat,
-        status: formData.status, // Status anggota
-        profile_image_url: uploadedImageUrl, // Menggunakan URL gambar yang diupload (simulasi)
-        tanggal_daftar: new Date().toISOString(), // Tanggal pendaftaran otomatis
-        is_active: formData.status === "Aktif" ? true : false, // Sesuaikan dengan status yang dipilih
+        status: formData.status, // Status anggota (Aktif/Tidak Aktif)
+        profile_image_url: uploadedImageUrl, // URL gambar profil
+        // tanggal_daftar dan is_active akan diatur di sisi server oleh Mongoose/API
       };
 
       console.log("Mengirim data anggota ke API:", payload);
 
-      // --- SIMULASI PENGIRIMAN DATA KE API ---
+      // Panggil API Route Next.js Anda
       const response = await fetch("/api/anggota", {
-        // Ganti dengan URL API Anda
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -107,6 +109,9 @@ export default function TambahAnggota() {
         const errorData = await response.json();
         throw new Error(errorData.message || "Gagal menambahkan anggota.");
       }
+
+      const result = await response.json();
+      console.log("Anggota berhasil ditambahkan:", result);
 
       setStatusMessage("Anggota berhasil ditambahkan!");
       setIsError(false);
@@ -124,10 +129,10 @@ export default function TambahAnggota() {
         profileImage: null, // Reset file input
       });
 
-      // Opsional: Redirect setelah beberapa saat
-      // setTimeout(() => {
-      //   router.push("/admin/anggota");
-      // }, 1500);
+      // Redirect setelah beberapa saat
+      setTimeout(() => {
+        router.push("/admin/anggota");
+      }, 1500);
     } catch (error) {
       console.error("Error saat menambahkan anggota:", error);
       setStatusMessage(`Gagal menambahkan anggota: ${error.message}`);
@@ -349,7 +354,7 @@ export default function TambahAnggota() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className={`px-6 py-2 rounded-lg font-semibold shadow-md transition-colors ${
+                    className={`px-6 py-2 rounded-lg font-semibold shadow-md transition-colors text-white ${
                       isSubmitting
                         ? "bg-green-400 cursor-not-allowed"
                         : "bg-green-600 hover:bg-green-700"

@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 
 import { signOut } from "next-auth/react";
 
-
 export default function Sidebar() {
   const inactiveLink = "flex gap-2 py-2 px-7";
   const activeLink = inactiveLink + " bg-amber-500 rounded-md font-medium";
@@ -102,7 +101,7 @@ export default function Sidebar() {
           onClick={() => signOut()}
           className={`${
             pathname.includes("/login") ? activeLink : inactiveLink
-          } mt-52 text-red-500 font-semibold cursor-pointer hover:text-red-700`}
+          } mt-130 text-red-600 font-semibold cursor-pointer hover:text-red-700  py-1.5 px-5 fixed hover:bg-red-50 rounded-md transition-all duration-200 group border border-red-100 hover:border-red-200`}
         >
           <Image
             src="/icons/log-out.svg"

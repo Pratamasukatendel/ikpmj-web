@@ -1,132 +1,97 @@
 // app/admin/anggota/edit/[id]/page.jsx
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
 import Sidebar from "@/app/component/admin/sidebar";
 import Navbar from "@/app/component/admin/navbar";
 import Link from "next/link";
+import { useParams, useRouter } from "next/navigation"; // Import useParams and useRouter
 
 export default function EditAnggota() {
-  const { id } = useParams(); // Mengambil ID anggota dari URL
+  const params = useParams(); // Get parameters from the URL (e.g., { id: 'anggotaId' })
   const router = useRouter();
+  const { id } = params; // Get the member ID from the URL
 
-  // State untuk menyimpan nilai input form
+  // State to store form input values
   const [formData, setFormData] = useState({
-    nama: "", // Nama Lengkap
-    angkatan: "", // Angkatan
-    jurusan: "", // Jurusan
-    instansi: "", // Instansi/Universitas
-    nomorKontak: "", // No Telepon
-    email: "", // Email
-    alamat: "", // Alamat
-    status: "Aktif", // Status anggota
-    // userId: "", // Dihapus: User ID (NIM/Nomor Induk)
-    profileImage: null, // Untuk menyimpan objek File yang baru diupload
-    currentProfileImageUrl: "", // Untuk menampilkan URL gambar yang sudah ada
+    nama: "",
+    angkatan: "",
+    jurusan: "",
+    instansi: "",
+    nomorKontak: "",
+    email: "",
+    alamat: "",
+    status: "Aktif",
+    profileImage: null, // To store the uploaded File object
+    profile_image_url: "", // Existing profile image URL
   });
 
-  // State untuk loading status saat fetch data atau submit
-  const [isLoading, setIsLoading] = useState(true);
-  // State untuk pesan status (sukses/error) setelah operasi
+  // State for status messages (success/error)
   const [statusMessage, setStatusMessage] = useState("");
   const [isError, setIsError] = useState(false);
-  // State untuk loading saat submit
+  // State for loading during submission and data fetching
+  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // useEffect untuk fetch data anggota saat komponen dimuat atau ID berubah
+  // useEffect to load member data when the component is first rendered
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      setStatusMessage(""); // Reset pesan status
-      setIsError(false);
-
-      try {
-        // --- Ganti dengan fetch nyata data anggota berdasarkan ID dari API/database Anda ---
-        // Contoh:
-        // const response = await fetch(`/api/anggota/${id}`);
-        // if (!response.ok) {
-        //   throw new Error('Gagal mengambil data anggota.');
-        // }
-        // const data = await response.json();
-        // setFormData({
-        //   nama: data.nama,
-        //   angkatan: data.angkatan,
-        //   jurusan: data.jurusan,
-        //   instansi: data.instansi,
-        //   nomorKontak: data.nomor_kontak,
-        //   email: data.email,
-        //   alamat: data.alamat,
-        //   status: data.status,
-        //   // userId: data.user_id, // Pastikan ini juga dihapus dari data API jika tidak digunakan
-        //   profileImage: null, // File input selalu dimulai dari null
-        //   currentProfileImageUrl: data.profile_image_url || '', // URL gambar yang sudah ada
-        // });
-
-        // Simulasi fetch data dengan delay
-        await new Promise((resolve) => setTimeout(resolve, 500)); // Simulasi loading
-        const fakeData = {
-          id: id,
-          nama: `Anggota ID ${id} (Edit)`,
-          angkatan: "2022",
-          jurusan: "Teknik Informatika",
-          instansi: "Universitas Gadjah Mada",
-          nomor_kontak: "081234567890",
-          email: `anggota${id}@example.com`,
-          alamat: `Jl. Contoh No. ${id}, Yogyakarta`,
-          status: "Aktif",
-          // user_id: `NIM${id}`, // Dihapus dari fakeData
-          profile_image_url: `https://placehold.co/40x40/abcdef/ffffff?text=U${id}`,
-        };
-
-        setFormData({
-          nama: fakeData.nama,
-          angkatan: fakeData.angkatan,
-          jurusan: fakeData.jurusan,
-          instansi: fakeData.instansi,
-          nomorKontak: fakeData.nomor_kontak,
-          email: fakeData.email,
-          alamat: fakeData.alamat,
-          status: fakeData.status,
-          // userId: fakeData.user_id, // Dihapus dari setFormData
-          profileImage: null, // Selalu null untuk input file
-          currentProfileImageUrl: fakeData.profile_image_url, // Simpan URL yang ada
-        });
-
-        setStatusMessage("Data anggota berhasil dimuat.");
-        setIsError(false);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setStatusMessage(`Gagal memuat data anggota: ${error.message}`);
-        setIsError(true);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     if (id) {
-      fetchData();
+      const fetchAnggota = async () => {
+        setIsLoading(true);
+        setStatusMessage("");
+        setIsError(false);
+        try {
+          // *** PERUBAHAN DI SINI: Mengubah panggilan API agar sesuai dengan rute dinamis ***
+          const response = await fetch(`/api/anggota/${id}`); // Panggil API GET by ID
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Gagal memuat data anggota.");
+          }
+          const data = await response.json();
+          // Set formData with data fetched from the API
+          setFormData({
+            nama: data.nama || "",
+            angkatan: data.angkatan || "",
+            jurusan: data.jurusan || "",
+            instansi: data.instansi || "",
+            nomorKontak: data.nomor_kontak || "", // Adjust to DB field name
+            email: data.email || "",
+            alamat: data.alamat || "",
+            status: data.status || "Aktif",
+            profileImage: null, // No file loaded from backend
+            profile_image_url: data.profile_image_url || "", // Existing image URL
+          });
+          setStatusMessage("Data anggota berhasil dimuat.");
+        } catch (error) {
+          console.error("Error fetching anggota for edit:", error);
+          setStatusMessage(`Gagal memuat data anggota: ${error.message}`);
+          setIsError(true);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchAnggota();
     }
-  }, [id]); // Dependensi [id] agar fetch ulang jika ID di URL berubah
+  }, [id]); // Dependency on ID so data reloads if ID changes
 
-  // Handler untuk perubahan input teks dan select
+  // Handler for text and select input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
+    setFormData((prevData) => ({
+      ...prevData,
       [name]: value,
     }));
   };
 
-  // Handler khusus untuk input file (gambar profil)
+  // Handler for file input (profile image)
   const handleFileChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      profileImage: e.target.files[0], // Ambil file pertama yang dipilih
+    setFormData((prevData) => ({
+      ...prevData,
+      profileImage: e.target.files[0], // Get the first selected file
     }));
   };
 
-  // Handler untuk submit form
+  // Handler for form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -134,91 +99,104 @@ export default function EditAnggota() {
     setIsError(false);
 
     try {
-      let finalProfileImageUrl = formData.currentProfileImageUrl; // Default ke URL yang sudah ada
+      let currentProfileImageUrl = formData.profile_image_url;
 
+      // If a new profile image is selected, upload it first
       if (formData.profileImage) {
-        // --- SIMULASI UPLOAD FILE BARU ---
-        // Di sini Anda akan mengimplementasikan logika upload file ke server/cloud storage.
-        // Contoh: Menggunakan FormData untuk mengirim file ke API Route Next.js
-        // const uploadFormData = new FormData();
-        // uploadFormData.append('file', formData.profileImage);
-        // const uploadResponse = await fetch('/api/upload-profile-image', {
-        //   method: 'POST',
-        //   body: uploadFormData,
-        // });
-        // if (!uploadResponse.ok) {
-        //   throw new Error('Gagal mengupload gambar profil baru.');
-        // }
-        // const uploadResult = await uploadResponse.json();
-        // finalProfileImageUrl = uploadResult.url; // URL gambar yang diupload
+        // Create FormData to send the file
+        const uploadFormData = new FormData();
+        uploadFormData.append("profileImage", formData.profileImage);
 
-        // Simulasi delay upload
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        finalProfileImageUrl = `https://placehold.co/40x40/abcdef/ffffff?text=U${id}_New`;
+        // --- Panggil API Upload Gambar (akan dibuat di langkah berikutnya) ---
+        // This is a placeholder for the actual image upload API call.
+        // You will create a separate API route (e.g., /api/upload)
+        // that handles file uploads to a cloud storage service (e.g., Cloudinary, S3).
+        // For now, we'll simulate the upload and get a placeholder URL.
+        const uploadResponse = await fetch("/api/upload", {
+          // This API route needs to be created
+          method: "POST",
+          body: uploadFormData,
+        });
+
+        if (!uploadResponse.ok) {
+          const errorData = await uploadResponse.json();
+          throw new Error(
+            errorData.message || "Gagal mengupload gambar profil."
+          );
+        }
+        const uploadResult = await uploadResponse.json();
+        // Assuming the upload API returns the URL of the uploaded image
+        currentProfileImageUrl = uploadResult.url; // *** PERBAIKAN DI SINI ***
         console.log(
-          "Simulasi gambar profil baru diupload ke:",
-          finalProfileImageUrl
+          "Gambar profil berhasil diupload ke:",
+          currentProfileImageUrl
         );
       }
 
-      // Susun data payload sesuai struktur tabel anggota
+      // Construct the payload according to your MongoDB API's expected structure
       const payload = {
+        id: id, // Send the member ID to be updated
         nama: formData.nama,
         angkatan: formData.angkatan,
         jurusan: formData.jurusan,
         instansi: formData.instansi,
-        nomor_kontak: formData.nomorKontak,
+        nomorKontak: formData.nomorKontak,
         email: formData.email,
         alamat: formData.alamat,
         status: formData.status,
-        // user_id: formData.userId, // Dihapus dari payload
-        profile_image_url: finalProfileImageUrl, // Menggunakan URL gambar final
-        is_active: formData.status === "Aktif" ? true : false, // Sesuaikan dengan status yang dipilih
+        profile_image_url: currentProfileImageUrl, // *** PERBAIKAN DI SINI ***
       };
 
-      console.log("Mengirim data edit ke API:", payload);
+      console.log("Mengirim data update anggota ke API:", payload);
 
-      // --- SIMULASI PENGIRIMAN DATA UPDATE KE API ---
-      const response = await fetch(`/api/anggota/${id}`, {
-        // Ganti dengan URL API Anda
-        method: "PUT", // Atau PATCH
+      // Call your Next.js API Route with the PUT method
+      const response = await fetch("/api/anggota", {
+        method: "PUT",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json", // Still sending JSON for member data
         },
         body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(
-          errorData.message || "Gagal menyimpan perubahan anggota."
-        );
+        throw new Error(errorData.message || "Gagal mengupdate anggota.");
       }
 
-      setStatusMessage("Perubahan anggota berhasil disimpan!");
+      const result = await response.json();
+      console.log("Anggota berhasil diupdate:", result);
+
+      setStatusMessage("Anggota berhasil diupdate!");
       setIsError(false);
-      // Opsional: Redirect setelah beberapa saat
+
+      // Optional: Redirect back to the member list page after update
       setTimeout(() => {
-        router.push("/admin/anggota"); // Redirect ke halaman daftar anggota
+        router.push("/admin/anggota");
       }, 1500);
     } catch (error) {
-      console.error("Error submitting form:", error);
-      setStatusMessage(`Gagal menyimpan perubahan: ${error.message}`);
+      console.error("Error saat mengupdate anggota:", error);
+      setStatusMessage(`Gagal mengupdate anggota: ${error.message}`);
       setIsError(true);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Tampilkan loading state saat data sedang diambil
   if (isLoading) {
     return (
-      <div className="flex min-h-screen bg-gray-100">
-        <Sidebar />
-        <div className="flex-1 flex flex-col items-center justify-center">
-          <Navbar />
-          <div className="text-xl text-gray-700">Memuat data anggota...</div>
-        </div>
+      <div className="flex min-h-screen bg-gray-100 items-center justify-center">
+        <p className="text-gray-600 text-lg">Memuat data anggota...</p>
+      </div>
+    );
+  }
+
+  if (isError && !formData.nama) {
+    // Display error message if there's an error and data hasn't been loaded
+    return (
+      <div className="flex min-h-screen bg-gray-100 items-center justify-center">
+        <p className="text-red-600 text-lg">
+          {statusMessage || "Terjadi kesalahan saat memuat data."}
+        </p>
       </div>
     );
   }
@@ -231,11 +209,11 @@ export default function EditAnggota() {
         <div className="p-7 flex-1 flex flex-col items-center justify-center">
           <div className="w-full max-w-2xl">
             <h1 className="text-3xl font-bold text-gray-800 text-center mb-8">
-              Edit Anggota <span className="text-teal-600">ID: {id}</span>
+              Edit Anggota
             </h1>
             <div className="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Pesan Status */}
+                {/* Status Message */}
                 {statusMessage && (
                   <div
                     className={`p-3 rounded-md text-sm ${
@@ -398,7 +376,6 @@ export default function EditAnggota() {
                   >
                     <option value="Aktif">Aktif</option>
                     <option value="Tidak Aktif">Tidak Aktif</option>
-                    {/* Opsi "Pending" dihapus */}
                   </select>
                 </div>
 
@@ -408,41 +385,43 @@ export default function EditAnggota() {
                     htmlFor="profileImage"
                     className="mb-2 text-gray-700 font-medium"
                   >
-                    Upload Gambar Profil (Biarkan kosong jika tidak berubah)
+                    Upload Gambar Profil
                   </label>
                   <input
                     type="file"
                     id="profileImage"
                     name="profileImage"
-                    accept="image/*" // Hanya menerima file gambar
+                    accept="image/*"
                     onChange={handleFileChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-md file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors"
                   />
-                  {/* Tampilkan preview gambar yang sudah ada atau yang baru dipilih */}
                   {formData.profileImage ? (
                     <p className="mt-2 text-sm text-gray-500">
                       File baru terpilih: {formData.profileImage.name}
                     </p>
                   ) : (
-                    formData.currentProfileImageUrl && (
-                      <div className="mt-4">
-                        <p className="text-sm text-gray-600 mb-2">
-                          Gambar Profil Saat Ini:
+                    formData.profile_image_url && (
+                      <div className="mt-2">
+                        <p className="text-sm text-gray-500 mb-2">
+                          Gambar profil saat ini:
                         </p>
                         <img
-                          src={formData.currentProfileImageUrl}
-                          alt="Profil Anggota"
-                          className="w-24 h-24 object-cover rounded-full shadow-sm border border-gray-200"
+                          src={formData.profile_image_url}
+                          alt="Current Profile"
+                          className="w-20 h-20 rounded-full object-cover border border-gray-300"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = `https://placehold.co/80x80/e0e0e0/000000?text=${formData.nama
+                              .charAt(0)
+                              .toUpperCase()}`;
+                          }}
                         />
-                        <p className="text-xs text-gray-500 mt-1 truncate">
-                          {formData.currentProfileImageUrl}
-                        </p>
                       </div>
                     )
                   )}
                 </div>
 
-                {/* Tombol Aksi */}
+                {/* Action Buttons */}
                 <div className="flex justify-end gap-4 pt-4">
                   <Link
                     href={"/admin/anggota/"}
@@ -452,11 +431,11 @@ export default function EditAnggota() {
                   </Link>
                   <button
                     type="submit"
-                    disabled={isSubmitting} // Disable tombol saat submit
-                    className={`px-6 py-2 rounded-lg font-semibold shadow-md transition-colors ${
+                    disabled={isSubmitting}
+                    className={`px-6 py-2 rounded-lg font-semibold shadow-md transition-colors text-white ${
                       isSubmitting
-                        ? "bg-teal-400 cursor-not-allowed"
-                        : "bg-teal-600 hover:bg-teal-700"
+                        ? "bg-blue-400 cursor-not-allowed"
+                        : "bg-blue-600 hover:bg-blue-700"
                     }`}
                   >
                     {isSubmitting ? "Menyimpan..." : "Simpan Perubahan"}

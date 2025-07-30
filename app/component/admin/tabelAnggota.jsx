@@ -1,148 +1,126 @@
 // app/component/admin/tabelAnggota.jsx
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import ToggleSwitch from "./ToggleSwitch"; // Pastikan path import benar
 
-// Data dummy untuk simulasi fetch dari API
-const dummyApiAnggotaData = [
-  {
-    id: 1,
-    nama: "Sugiyo",
-    angkatan: "2022", // Menambahkan field angkatan
-    email: "sugiyo@example.com",
-    nomorKontak: "081234567890",
-    tanggalDaftar: "2023-08-09",
-    jamDaftar: "07:00",
-    isActive: true,
-    profileImageUrl: "https://placehold.co/40x40/e0e0e0/000000?text=S",
-  },
-  {
-    id: 2,
-    nama: "Ahmad",
-    angkatan: "2023", // Menambahkan field angkatan
-    email: "ahmad@example.com",
-    nomorKontak: "081298765432",
-    isActive: false,
-    tanggalDaftar: "2023-08-10",
-    jamDaftar: "08:30",
-    profileImageUrl: "https://placehold.co/40x40/e0e0e0/000000?text=A",
-  },
-  {
-    id: 3,
-    nama: "Siti",
-    angkatan: "2022", // Menambahkan field angkatan
-    email: "siti@example.com",
-    nomorKontak: "081311223344",
-    tanggalDaftar: "2023-08-11",
-    jamDaftar: "09:00",
-    isActive: true,
-    profileImageUrl: "https://placehold.co/40x40/e0e0e0/000000?text=S",
-  },
-  {
-    id: 4,
-    nama: "Budi",
-    angkatan: "2024", // Menambahkan field angkatan
-    email: "budi@example.com",
-    nomorKontak: "081355667788",
-    tanggalDaftar: "2023-08-12",
-    jamDaftar: "10:15",
-    isActive: true,
-    profileImageUrl: "https://placehold.co/40x40/e0e0e0/000000?text=B",
-  },
-];
-
-// Komponen TabelAnggota menerima searchTerm dan filterStatus sebagai props
 export default function TabelAnggota({ searchTerm, filterStatus }) {
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState("");
   const [isError, setIsError] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
 
-  // useEffect untuk simulasi fetch data dari API
-  useEffect(() => {
-    const fetchUsersData = async () => {
-      setIsLoading(true);
-      setStatusMessage("");
-      setIsError(false);
-      try {
-        // Simulasi delay fetch data dari API
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        setUsers(dummyApiAnggotaData); // Set data yang di-fetch
-        setStatusMessage("Data anggota berhasil dimuat.");
-      } catch (error) {
-        console.error("Error fetching users:", error);
-        setStatusMessage("Gagal memuat data anggota.");
-        setIsError(true);
-      } finally {
-        setIsLoading(false);
+  // State untuk paginasi
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Default items per page
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+
+  // Fungsi untuk mengambil data anggota dari API
+  const fetchUsersData = useCallback(async () => {
+    setIsLoading(true);
+    setStatusMessage("");
+    setIsError(false);
+    try {
+      // Bangun URL dengan query parameters untuk pencarian, filter, dan paginasi
+      const queryParams = new URLSearchParams();
+      if (searchTerm) {
+        queryParams.append("searchTerm", searchTerm);
       }
-    };
+      if (filterStatus && filterStatus !== "all") {
+        queryParams.append("filterStatus", filterStatus);
+      }
+      queryParams.append("page", currentPage.toString());
+      queryParams.append("limit", itemsPerPage.toString());
 
+      const response = await fetch(`/api/anggota?${queryParams.toString()}`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message || "Gagal memuat data anggota dari API."
+        );
+      }
+      const result = await response.json(); // Respons API sekarang berisi data paginasi
+
+      setUsers(result.data);
+      setTotalItems(result.total);
+      setTotalPages(result.totalPages);
+      setStatusMessage("Data anggota berhasil dimuat.");
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      setStatusMessage(`Gagal memuat data anggota: ${error.message}`);
+      setIsError(true);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [searchTerm, filterStatus, currentPage, itemsPerPage]); // Dependensi untuk useCallback
+
+  // useEffect untuk memanggil fetchUsersData saat komponen mount atau parameter paginasi/filter/search berubah
+  useEffect(() => {
     fetchUsersData();
-  }, []); // [] agar hanya dijalankan sekali saat komponen mount
+  }, [fetchUsersData]);
 
-  // Fungsi untuk mengubah status aktif/nonaktif pengguna
-  const handleToggle = (id) => {
-    // Ganti dengan panggilan API nyata untuk update status
-    setStatusMessage(`Simulasi: Mengubah status user ID ${id}...`);
-    setIsError(false);
-
-    setTimeout(() => {
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user.id === id ? { ...user, isActive: !user.isActive } : user
-        )
-      );
-      setStatusMessage(`Status user ID ${id} berhasil diubah (simulasi)!`);
-      setIsError(false);
-    }, 300);
+  // Handler untuk mengubah halaman
+  const handlePageChange = (pageNumber) => {
+    if (pageNumber > 0 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
   };
 
-  // Fungsi handleDelete
-  const handleDelete = (id) => {
-    // Ganti window.confirm dengan modal konfirmasi kustom di produksi
-    setStatusMessage(`Simulasi: Menghapus user ID ${id}...`);
-    setIsError(false);
-
-    setTimeout(() => {
-      setUsers((prevUsers) => prevUsers.filter((user) => user.id !== id));
-      setStatusMessage(`User ID ${id} berhasil dihapus (simulasi)!`);
-      setIsError(false);
-    }, 500);
+  // Fungsi untuk menampilkan modal konfirmasi penghapusan
+  const confirmDelete = (id) => {
+    setUserToDelete(id);
+    setShowConfirmModal(true);
   };
 
-  // Fungsi untuk memfilter data berdasarkan searchTerm dan filterStatus
-  const filteredUsers = users.filter((user) => {
-    // Pastikan properti user tidak undefined sebelum memanggil toLowerCase()
-    const userNama = user.nama || "";
-    const userAngkatan = user.angkatan ? user.angkatan.toString() : ""; // Angkatan bisa jadi angka, konversi ke string
-    const userEmail = user.email || "";
-    const userNomorKontak = user.nomorKontak || "";
+  // Fungsi handleDelete (setelah konfirmasi)
+  const handleDelete = async () => {
+    if (!userToDelete) return;
 
-    // Pastikan searchTerm juga bukan undefined sebelum memanggil toLowerCase()
-    const currentSearchTerm = searchTerm || "";
+    setStatusMessage(`Menghapus anggota...`);
+    setIsError(false);
+    setShowConfirmModal(false);
 
-    const matchesSearch =
-      userNama.toLowerCase().includes(currentSearchTerm.toLowerCase()) ||
-      userAngkatan.toLowerCase().includes(currentSearchTerm.toLowerCase()) || // Tambahkan pencarian angkatan
-      userEmail.toLowerCase().includes(currentSearchTerm.toLowerCase()) ||
-      userNomorKontak.toLowerCase().includes(currentSearchTerm.toLowerCase());
+    try {
+      const response = await fetch(`/api/anggota?id=${userToDelete}`, {
+        method: "DELETE",
+      });
 
-    const matchesStatus =
-      filterStatus === "all" ||
-      (filterStatus === "active" && user.isActive) ||
-      (filterStatus === "inactive" && !user.isActive);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Gagal menghapus anggota.");
+      }
 
-    return matchesSearch && matchesStatus;
-  });
+      setStatusMessage(`Anggota berhasil dihapus!`);
+      setUserToDelete(null);
+      // Setelah menghapus, ambil ulang data untuk memperbarui tabel dan paginasi
+      fetchUsersData();
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      setStatusMessage(`Gagal menghapus anggota: ${error.message}`);
+      setIsError(true);
+    }
+  };
 
   // Fungsi untuk format tanggal
   const formatDate = (dateString) => {
-    if (!dateString) return ""; // Handle undefined or null dateString
-    const [year, month, day] = dateString.split("-");
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // Bulan dimulai dari 0
+    const year = date.getFullYear();
     return `${day}/${month}/${year}`;
+  };
+
+  // Fungsi untuk format jam
+  const formatTime = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    return `${hours}:${minutes}`;
   };
 
   if (isLoading) {
@@ -153,7 +131,7 @@ export default function TabelAnggota({ searchTerm, filterStatus }) {
     );
   }
 
-  if (isError) {
+  if (isError && !users.length) {
     return (
       <div className="text-center py-8 text-red-600">
         {statusMessage || "Terjadi kesalahan saat memuat data."}
@@ -189,7 +167,7 @@ export default function TabelAnggota({ searchTerm, filterStatus }) {
               Data Ditambah
             </th>
             <th className="p-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-              Status Aktif
+              Status
             </th>
             <th className="p-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
               Aksi
@@ -197,34 +175,36 @@ export default function TabelAnggota({ searchTerm, filterStatus }) {
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-200 text-gray-700">
-          {filteredUsers.length > 0 ? (
-            filteredUsers.map((user, index) => (
+          {users.length > 0 ? (
+            users.map((user, index) => (
               <tr
                 key={user.id}
                 className="hover:bg-gray-50 transition-colors duration-150"
               >
-                <td className="p-4 whitespace-nowrap text-sm">{index + 1}</td>
+                <td className="p-4 whitespace-nowrap text-sm">
+                  {(currentPage - 1) * itemsPerPage + index + 1}
+                </td>
                 {/* Kolom Akun */}
                 <td className="p-4 whitespace-nowrap">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
                       <img
-                        src={user.profileImageUrl}
+                        src={user.profile_image_url}
                         alt={`${user.nama} profile`}
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           e.target.onerror = null;
-                          e.target.src =
-                            "https://placehold.co/40x40/e0e0e0/000000?text=?";
-                        }} // Fallback image
+                          e.target.src = `https://placehold.co/40x40/e0e0e0/000000?text=${user.nama
+                            .charAt(0)
+                            .toUpperCase()}`;
+                        }}
                       />
                     </div>
                     <div>
                       <p className="font-medium text-gray-800">{user.nama}</p>
                       <p className="text-gray-500 text-xs">
                         Angkatan {user.angkatan}
-                      </p>{" "}
-                      {/* Mengganti userId dengan angkatan */}
+                      </p>
                     </div>
                   </div>
                 </td>
@@ -232,24 +212,31 @@ export default function TabelAnggota({ searchTerm, filterStatus }) {
                 <td className="p-4">
                   <div>
                     <p className="font-medium text-gray-800">{user.email}</p>
-                    <p className="text-gray-500 text-xs">{user.nomorKontak}</p>
+                    <p className="text-gray-500 text-xs">{user.nomor_kontak}</p>
                   </div>
                 </td>
                 {/* Kolom Data Ditambah */}
                 <td className="p-4 whitespace-nowrap text-sm">
                   <div>
                     <p className="font-medium text-gray-800">
-                      {formatDate(user.tanggalDaftar)}
+                      {formatDate(user.tanggal_daftar)}
                     </p>
-                    <p className="text-gray-500 text-xs">{user.jamDaftar}</p>
+                    <p className="text-gray-500 text-xs">
+                      {formatTime(user.tanggal_daftar)}
+                    </p>
                   </div>
                 </td>
-                {/* Kolom Status Aktif dengan Toggle */}
+                {/* Kolom Status Aktif (Teks Berwarna) */}
                 <td className="p-4">
-                  <ToggleSwitch
-                    isEnabled={user.isActive}
-                    onToggle={() => handleToggle(user.id)}
-                  />
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      user.is_active
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    {user.is_active ? "Aktif" : "Tidak Aktif"}
+                  </span>
                 </td>
                 {/* Kolom Aksi */}
                 <td className="p-4 whitespace-nowrap text-sm">
@@ -260,7 +247,7 @@ export default function TabelAnggota({ searchTerm, filterStatus }) {
                     Edit
                   </Link>
                   <button
-                    onClick={() => handleDelete(user.id)}
+                    onClick={() => confirmDelete(user.id)}
                     className="font-medium text-red-600 hover:text-red-800 transition-colors"
                   >
                     Hapus
@@ -270,13 +257,111 @@ export default function TabelAnggota({ searchTerm, filterStatus }) {
             ))
           ) : (
             <tr>
-              <td colSpan="5" className="text-center p-4 text-gray-500">
+              <td colSpan="6" className="text-center p-4 text-gray-500">
                 Tidak ada anggota yang ditemukan.
               </td>
             </tr>
           )}
         </tbody>
       </table>
+
+      {/* Kontrol Paginasi */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-2 p-4 border-t border-gray-200 bg-gray-50">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Previous
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+            (pageNumber) => (
+              <button
+                key={pageNumber}
+                onClick={() => handlePageChange(pageNumber)}
+                className={`px-4 py-2 rounded-md ${
+                  currentPage === pageNumber
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                {pageNumber}
+              </button>
+            )
+          )}
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Next
+          </button>
+        </div>
+      )}
+
+      {/* Modal Konfirmasi Hapus */}
+      {/* Modal Konfirmasi Hapus - Modern Simple Design */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          {/* Backdrop dengan blur effect */}
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity duration-300"></div>
+
+          {/* Modal container */}
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="relative transform overflow-hidden rounded-xl bg-white shadow-2xl transition-all duration-300 w-full max-w-sm mx-auto">
+              {/* Modal Content */}
+              <div className="px-8 pt-8 pb-6 text-center">
+                {/* Warning Icon */}
+                <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-red-50 mb-6">
+                  <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                    <svg
+                      className="w-6 h-6 text-red-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Title */}
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                  Hapus Anggota
+                </h3>
+
+                {/* Description */}
+                <div className="text-gray-500 text-sm leading-relaxed mb-8">
+                  <p>Apakah Anda yakin ingin menghapus anggota ini?</p>
+                  <p>Tindakan ini tidak dapat dibatalkan.</p>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowConfirmModal(false)}
+                    className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-md font-medium hover:bg-gray-200 transition-colors duration-200"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    className="flex-1 px-4 py-3 bg-red-500 text-white rounded-md font-medium hover:bg-red-600 transition-colors duration-200"
+                  >
+                    Hapus
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

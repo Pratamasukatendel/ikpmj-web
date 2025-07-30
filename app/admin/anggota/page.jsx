@@ -43,7 +43,7 @@ export default function Anggota() {
                   onClick={() => handleFilterChange("all")}
                   className={`pb-1 border-b-2 transition-colors duration-200 ${
                     filterStatus === "all"
-                      ? "border-teal-600 text-teal-600"
+                      ? "border-green-600 text-green-600"
                       : "border-transparent text-gray-600 hover:text-gray-800"
                   }`}
                 >
@@ -55,7 +55,7 @@ export default function Anggota() {
                   onClick={() => handleFilterChange("active")}
                   className={`pb-1 border-b-2 transition-colors duration-200 ${
                     filterStatus === "active"
-                      ? "border-teal-600 text-teal-600"
+                      ? "border-green-600 text-green-600"
                       : "border-transparent text-gray-600 hover:text-gray-800"
                   }`}
                 >
@@ -67,7 +67,7 @@ export default function Anggota() {
                   onClick={() => handleFilterChange("inactive")}
                   className={`pb-1 border-b-2 transition-colors duration-200 ${
                     filterStatus === "inactive"
-                      ? "border-teal-600 text-teal-600"
+                      ? "border-green-600 text-green-600"
                       : "border-transparent text-gray-600 hover:text-gray-800"
                   }`}
                 >
