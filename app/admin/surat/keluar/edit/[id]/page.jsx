@@ -1,4 +1,3 @@
-// app/admin/surat/keluar/edit/[id]/page.jsx
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -15,13 +14,14 @@ export default function EditSuratKeluar() {
   const [formData, setFormData] = useState({
     nomorSurat: "",
     tanggalSurat: "",
-    tujuan: "",
+    tujuan: "", // Akan dipetakan ke 'penerima' di backend
     perihal: "",
     isiSurat: "",
     jenisSurat: "Pemberitahuan",
     catatan: "",
     fileSurat: null, // Untuk menyimpan objek File yang baru diupload
     currentFileUrl: "", // Untuk menampilkan URL file yang sudah ada
+    originalFileName: "", // Untuk menyimpan nama file asli dari backend
   });
 
   // State untuk loading status saat fetch data atau submit
@@ -32,6 +32,17 @@ export default function EditSuratKeluar() {
   // State untuk loading saat submit
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Fungsi untuk format tanggal ke YYYY-MM-DD untuk input type="date"
+  const formatToInputDate = (isoDateString) => {
+    if (!isoDateString) return "";
+    const date = new Date(isoDateString);
+    if (isNaN(date)) return "";
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
   // useEffect untuk fetch data surat keluar saat komponen dimuat atau ID berubah
   useEffect(() => {
     const fetchData = async () => {
@@ -40,49 +51,30 @@ export default function EditSuratKeluar() {
       setIsError(false);
 
       try {
-        // --- Ganti dengan fetch nyata data surat keluar berdasarkan ID dari API/database Anda ---
-        // Contoh:
-        // const response = await fetch(`/api/surat-keluar/${id}`);
-        // if (!response.ok) {
-        //   throw new Error('Gagal mengambil data surat keluar.');
-        // }
-        // const data = await response.json();
-        // setFormData({
-        //   nomorSurat: data.nomor_surat,
-        //   tanggalSurat: data.tanggal_surat,
-        //   tujuan: data.tujuan,
-        //   perihal: data.perihal,
-        //   isiSurat: data.isi_surat,
-        //   jenisSurat: data.jenis_surat,
-        //   catatan: data.catatan,
-        //   fileSurat: null, // File input selalu dimulai dari null
-        //   currentFileUrl: data.file_url || '', // URL file yang sudah ada
-        // });
-
-        // Simulasi fetch data dengan delay
-        await new Promise((resolve) => setTimeout(resolve, 500)); // Simulasi loading
-        const fakeData = {
-          id: id,
-          nomor_surat: `SK/IKPMJ/VII/2025/00${id}`,
-          tanggal_surat: "2025-07-01",
-          tujuan: `Tujuan Surat ${id}`,
-          perihal: `Perihal Edit Surat Keluar ${id}`,
-          isi_surat: `Ini adalah isi surat keluar dengan ID ${id} yang sedang diedit. Konten ini bisa sangat panjang.`,
-          jenis_surat: id % 2 === 0 ? "Undangan" : "Pemberitahuan",
-          catatan: `Catatan tambahan untuk surat keluar ID ${id}.`,
-          file_url: `https://www.africau.edu/images/default/sample.pdf?id=${id}`,
-        };
+        const response = await fetch(`/api/surat-keluar/${id}`); // Panggil API GET detail surat keluar
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(
+            errorData.message || "Gagal mengambil data surat keluar."
+          );
+        }
+        const data = await response.json();
+        const surat = data.suratKeluar; // Sesuaikan dengan struktur respons API Anda
 
         setFormData({
-          nomorSurat: fakeData.nomor_surat,
-          tanggalSurat: fakeData.tanggal_surat,
-          tujuan: fakeData.tujuan,
-          perihal: fakeData.perihal,
-          isiSurat: fakeData.isi_surat,
-          jenisSurat: fakeData.jenis_surat,
-          catatan: fakeData.catatan,
-          fileSurat: null, // Selalu null untuk input file
-          currentFileUrl: fakeData.file_url, // Simpan URL yang ada
+          nomorSurat: surat.nomorSurat || "",
+          tanggalSurat: formatToInputDate(surat.tanggalSurat),
+          tujuan: surat.penerima || "", // Memetakan 'penerima' dari backend ke 'tujuan' di frontend
+          perihal: surat.perihal || "",
+          isiSurat: surat.isiSurat || "",
+          jenisSurat: surat.jenisSurat || "Pemberitahuan",
+          catatan: surat.catatan || "",
+          fileSurat: null, // File input selalu dimulai dari null
+          currentFileUrl:
+            surat.fileSurat && surat.fileSurat.length > 0
+              ? surat.fileSurat[0]
+              : "", // Ambil URL file yang sudah ada
+          originalFileName: surat.originalFileName || "", // Ambil nama file asli
         });
 
         setStatusMessage("Data surat keluar berhasil dimuat.");
@@ -126,52 +118,35 @@ export default function EditSuratKeluar() {
     setIsError(false);
 
     try {
-      let finalFileUrl = formData.currentFileUrl; // Default ke URL yang sudah ada
+      // Buat objek FormData untuk mengirim data, termasuk file
+      const dataToSend = new FormData();
+      dataToSend.append("nomorSurat", formData.nomorSurat);
+      dataToSend.append("tanggalSurat", formData.tanggalSurat);
+      dataToSend.append("tujuan", formData.tujuan); // Menggunakan 'tujuan' yang akan dipetakan ke 'penerima' di backend
+      dataToSend.append("perihal", formData.perihal);
+      dataToSend.append("isiSurat", formData.isiSurat);
+      dataToSend.append("jenisSurat", formData.jenisSurat);
+      dataToSend.append("catatan", formData.catatan);
 
+      // Tambahkan file baru jika ada
       if (formData.fileSurat) {
-        // --- SIMULASI UPLOAD FILE BARU ---
-        // Di sini Anda akan mengimplementasikan logika upload file ke server/cloud storage.
-        // Contoh: Menggunakan FormData untuk mengirim file ke API Route Next.js
-        // const uploadFormData = new FormData();
-        // uploadFormData.append('file', formData.fileSurat);
-        // const uploadResponse = await fetch('/api/upload-surat-keluar-file', {
-        //   method: 'POST',
-        //   body: uploadFormData,
-        // });
-        // if (!uploadResponse.ok) {
-        //   throw new Error('Gagal mengupload file surat baru.');
-        // }
-        // const uploadResult = await uploadResponse.json();
-        // finalFileUrl = uploadResult.url; // URL file yang diupload
-
-        // Simulasi delay upload
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        finalFileUrl = `https://www.africau.edu/images/default/sample.pdf?id=${id}&new=${Date.now()}`;
-        console.log("Simulasi file baru diupload ke:", finalFileUrl);
+        dataToSend.append("fileSurat", formData.fileSurat);
+      } else {
+        // Jika tidak ada file baru, kirim URL file yang sudah ada
+        // Ini penting agar backend tahu file lama jika tidak ada perubahan
+        dataToSend.append("existingFileUrl", formData.currentFileUrl);
+        // Kirim juga nama file asli lama jika tidak ada file baru
+        dataToSend.append("originalFileName", formData.originalFileName);
       }
 
-      // Susun data payload sesuai struktur tabel surat keluar
-      const payload = {
-        nomor_surat: formData.nomorSurat,
-        tanggal_surat: formData.tanggalSurat,
-        tujuan: formData.tujuan,
-        perihal: formData.perihal,
-        isi_surat: formData.isiSurat,
-        jenis_surat: formData.jenisSurat,
-        catatan: formData.catatan,
-        file_url: finalFileUrl, // Menggunakan URL file final
-      };
+      console.log(
+        "Mengirim data edit ke API:",
+        Object.fromEntries(dataToSend.entries())
+      );
 
-      console.log("Mengirim data edit ke API:", payload);
-
-      // --- SIMULASI PENGIRIMAN DATA UPDATE KE API ---
       const response = await fetch(`/api/surat-keluar/${id}`, {
-        // Ganti dengan URL API Anda
-        method: "PUT", // Atau PATCH
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+        method: "PUT", // Menggunakan metode PUT untuk update
+        body: dataToSend, // Kirim objek FormData langsung
       });
 
       if (!response.ok) {
@@ -183,9 +158,9 @@ export default function EditSuratKeluar() {
 
       setStatusMessage("Perubahan surat keluar berhasil disimpan!");
       setIsError(false);
-      // Opsional: Redirect setelah beberapa saat
+      // Redirect setelah beberapa saat
       setTimeout(() => {
-        router.push("/admin/surat"); // Redirect ke halaman daftar surat
+        router.push("/admin/surat?tab=keluar"); // PERBAIKAN: Redirect ke halaman surat keluar dengan parameter tab
       }, 1500);
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -211,6 +186,23 @@ export default function EditSuratKeluar() {
     );
   }
 
+  // Tampilkan pesan error jika data tidak ditemukan atau terjadi kesalahan
+  if (isError && !formData.nomorSurat) {
+    // Menampilkan error jika data tidak terload dan form kosong
+    return (
+      <div className="flex min-h-screen bg-gray-100">
+        <Sidebar />
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <Navbar />
+          <div className="text-xl text-red-600">
+            {statusMessage ||
+              "Data surat tidak ditemukan atau terjadi kesalahan."}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen bg-gray-100">
       <Sidebar />
@@ -219,7 +211,8 @@ export default function EditSuratKeluar() {
         <div className="p-7 flex-1 flex flex-col items-center justify-center">
           <div className="w-full max-w-2xl">
             <h1 className="text-3xl font-bold text-gray-800 text-center mb-8">
-              Edit Surat Keluar <span className="text-teal-600">ID: {id}</span>
+              Edit Surat Keluar{" "}
+              <span className="text-teal-600">: {formData.perihal}</span>
             </h1>
             <div className="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -325,7 +318,7 @@ export default function EditSuratKeluar() {
                     name="isiSurat"
                     value={formData.isiSurat}
                     onChange={handleChange}
-                    rows="8"
+                    rows="8" // Lebih tinggi untuk isi surat
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors"
                     placeholder="Masukkan isi surat di sini. (Di implementasi nyata bisa menggunakan WYSIWYG editor)"
                   ></textarea>
@@ -385,7 +378,7 @@ export default function EditSuratKeluar() {
                     type="file"
                     id="fileSurat"
                     name="fileSurat"
-                    accept=".pdf,.doc,.docx" // Filter jenis file
+                    accept=".pdf,.doc,.docx" // Hanya menerima PDF dan Word
                     onChange={handleFileChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-md file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors"
                   />
@@ -405,8 +398,12 @@ export default function EditSuratKeluar() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-600 hover:underline text-sm"
+                          // Tambahkan atribut download jika originalFileName tersedia
+                          download={
+                            formData.originalFileName || "surat_keluar.pdf"
+                          }
                         >
-                          Lihat/Unduh File PDF
+                          Lihat/Unduh File
                         </a>
                         <p className="text-xs text-gray-500 mt-1 truncate">
                           {formData.currentFileUrl}
@@ -419,7 +416,7 @@ export default function EditSuratKeluar() {
                 {/* Tombol Aksi */}
                 <div className="flex justify-end gap-4 pt-4">
                   <Link
-                    href={"/admin/surat/"}
+                    href={"/admin/surat?tab=keluar"}
                     className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors font-semibold shadow-md"
                   >
                     Batal
@@ -427,7 +424,7 @@ export default function EditSuratKeluar() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className={`px-6 py-2 rounded-lg font-semibold shadow-md transition-colors ${
+                    className={`px-6 py-2 rounded-lg font-semibold shadow-md transition-colors text-white ${
                       isSubmitting
                         ? "bg-teal-400 cursor-not-allowed"
                         : "bg-teal-600 hover:bg-teal-700"
