@@ -1,7 +1,6 @@
-// app/admin/surat/masuk/edit/[id]/page.jsx
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react"; // Perbaikan: Menghapus '=>'
 import { useParams, useRouter } from "next/navigation";
 import Sidebar from "@/app/component/admin/sidebar";
 import Navbar from "@/app/component/admin/navbar";
@@ -32,6 +31,17 @@ export default function EditSuratMasuk() {
   // State untuk loading saat submit
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Fungsi untuk format tanggal ke YYYY-MM-DD untuk input type="date"
+  const formatToInputDate = (isoDateString) => {
+    if (!isoDateString) return "";
+    const date = new Date(isoDateString);
+    if (isNaN(date)) return "";
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
   // useEffect untuk fetch data surat masuk saat komponen dimuat atau ID berubah
   useEffect(() => {
     const fetchData = async () => {
@@ -40,49 +50,29 @@ export default function EditSuratMasuk() {
       setIsError(false);
 
       try {
-        // --- Ganti dengan fetch nyata data surat masuk berdasarkan ID dari API/database Anda ---
-        // Contoh:
-        // const response = await fetch(`/api/surat-masuk/${id}`);
-        // if (!response.ok) {
-        //   throw new Error('Gagal mengambil data surat masuk.');
-        // }
-        // const data = await response.json();
-        // setFormData({
-        //   nomorSurat: data.nomor_surat,
-        //   tanggalSurat: data.tanggal_surat,
-        //   tanggalDiterima: data.tanggal_diterima,
-        //   pengirim: data.pengirim,
-        //   perihal: data.perihal,
-        //   jenisSurat: data.jenis_surat,
-        //   catatan: data.catatan,
-        //   fileSurat: null, // File input selalu dimulai dari null
-        //   currentFileUrl: data.file_url || '', // URL file yang sudah ada
-        // });
-
-        // Simulasi fetch data dengan delay
-        await new Promise((resolve) => setTimeout(resolve, 500)); // Simulasi loading
-        const fakeData = {
-          id: id,
-          nomor_surat: `00${id}/IKPMJ/VI/2025`,
-          tanggal_surat: "2025-06-01",
-          tanggal_diterima: "2025-06-03",
-          pengirim: `Pengirim ${id}`,
-          perihal: `Perihal Surat Masuk ${id}`,
-          jenis_surat: id % 2 === 0 ? "Permohonan" : "Undangan",
-          catatan: `Catatan tambahan untuk surat masuk ID ${id}.`,
-          file_url: `https://www.africau.edu/images/default/sample.pdf?id=${id}`,
-        };
+        const response = await fetch(`/api/surat-masuk/${id}`); // Panggil API GET detail surat masuk
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(
+            errorData.message || "Gagal mengambil data surat masuk."
+          );
+        }
+        const data = await response.json();
+        const surat = data.suratMasuk; // Sesuaikan dengan struktur respons API Anda
 
         setFormData({
-          nomorSurat: fakeData.nomor_surat,
-          tanggalSurat: fakeData.tanggal_surat,
-          tanggalDiterima: fakeData.tanggal_diterima,
-          pengirim: fakeData.pengirim,
-          perihal: fakeData.perihal,
-          jenisSurat: fakeData.jenis_surat,
-          catatan: fakeData.catatan,
-          fileSurat: null, // Selalu null untuk input file
-          currentFileUrl: fakeData.file_url, // Simpan URL yang ada
+          nomorSurat: surat.nomorSurat || "",
+          tanggalSurat: formatToInputDate(surat.tanggalSurat),
+          tanggalDiterima: formatToInputDate(surat.tanggalDiterima),
+          pengirim: surat.pengirim || "",
+          perihal: surat.perihal || "",
+          jenisSurat: surat.jenisSurat || "Undangan",
+          catatan: surat.catatan || "",
+          fileSurat: null, // File input selalu dimulai dari null
+          currentFileUrl:
+            surat.fileSurat && surat.fileSurat.length > 0
+              ? surat.fileSurat[0]
+              : "",
         });
 
         setStatusMessage("Data surat masuk berhasil dimuat.");
@@ -126,52 +116,34 @@ export default function EditSuratMasuk() {
     setIsError(false);
 
     try {
-      let finalFileUrl = formData.currentFileUrl; // Default ke URL yang sudah ada
+      // Buat objek FormData untuk mengirim data, termasuk file
+      const dataToSend = new FormData();
+      dataToSend.append("nomorSurat", formData.nomorSurat);
+      dataToSend.append("tanggalSurat", formData.tanggalSurat);
+      dataToSend.append("tanggalDiterima", formData.tanggalDiterima);
+      dataToSend.append("pengirim", formData.pengirim);
+      dataToSend.append("perihal", formData.perihal);
+      dataToSend.append("jenisSurat", formData.jenisSurat);
+      dataToSend.append("catatan", formData.catatan);
 
+      // Tambahkan file baru jika ada
       if (formData.fileSurat) {
-        // --- SIMULASI UPLOAD FILE BARU ---
-        // Di sini Anda akan mengimplementasikan logika upload file ke server/cloud storage.
-        // Contoh: Menggunakan FormData untuk mengirim file ke API Route Next.js
-        // const uploadFormData = new FormData();
-        // uploadFormData.append('file', formData.fileSurat);
-        // const uploadResponse = await fetch('/api/upload-surat', {
-        //   method: 'POST',
-        //   body: uploadFormData,
-        // });
-        // if (!uploadResponse.ok) {
-        //   throw new Error('Gagal mengupload file surat baru.');
-        // }
-        // const uploadResult = await uploadResponse.json();
-        // finalFileUrl = uploadResult.url; // URL file yang diupload
-
-        // Simulasi delay upload
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        finalFileUrl = `https://www.africau.edu/images/default/sample.pdf?id=${id}&new=${Date.now()}`;
-        console.log("Simulasi file baru diupload ke:", finalFileUrl);
+        dataToSend.append("fileSurat", formData.fileSurat);
+      } else {
+        // Jika tidak ada file baru, kirim URL file yang sudah ada
+        // Ini penting agar backend tahu file lama jika tidak ada perubahan
+        dataToSend.append("existingFileUrl", formData.currentFileUrl);
       }
 
-      // Susun data payload sesuai struktur tabel surat masuk
-      const payload = {
-        nomor_surat: formData.nomorSurat,
-        tanggal_surat: formData.tanggalSurat,
-        tanggal_diterima: formData.tanggalDiterima,
-        pengirim: formData.pengirim,
-        perihal: formData.perihal,
-        jenis_surat: formData.jenisSurat,
-        catatan: formData.catatan,
-        file_url: finalFileUrl, // Menggunakan URL file final
-      };
+      console.log(
+        "Mengirim data edit ke API:",
+        Object.fromEntries(dataToSend.entries())
+      );
 
-      console.log("Mengirim data edit ke API:", payload);
-
-      // --- SIMULASI PENGIRIMAN DATA UPDATE KE API ---
       const response = await fetch(`/api/surat-masuk/${id}`, {
-        // Ganti dengan URL API Anda
-        method: "PUT", // Atau PATCH
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+        method: "PUT", // Menggunakan metode PUT untuk update
+        // Jangan set Content-Type untuk FormData, browser akan mengaturnya secara otomatis
+        body: dataToSend, // Kirim objek FormData langsung
       });
 
       if (!response.ok) {
@@ -185,7 +157,7 @@ export default function EditSuratMasuk() {
       setIsError(false);
       // Opsional: Redirect setelah beberapa saat
       setTimeout(() => {
-        router.push("/admin/surat"); // Redirect ke halaman daftar surat
+        router.push("/admin/surat"); // Redirect ke halaman daftar surat masuk
       }, 1500);
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -211,6 +183,23 @@ export default function EditSuratMasuk() {
     );
   }
 
+  // Tampilkan pesan error jika data tidak ditemukan atau terjadi kesalahan
+  if (isError && !formData.nomorSurat) {
+    // Menampilkan error jika data tidak terload dan form kosong
+    return (
+      <div className="flex min-h-screen bg-gray-100">
+        <Sidebar />
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <Navbar />
+          <div className="text-xl text-red-600">
+            {statusMessage ||
+              "Data surat tidak ditemukan atau terjadi kesalahan."}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen bg-gray-100">
       <Sidebar />
@@ -219,7 +208,8 @@ export default function EditSuratMasuk() {
         <div className="p-7 flex-1 flex flex-col items-center justify-center">
           <div className="w-full max-w-2xl">
             <h1 className="text-3xl font-bold text-gray-800 text-center mb-8">
-              Edit Surat Masuk <span className="text-teal-600">ID: {id}</span>
+              Edit Surat Masuk:{" "}
+              <span className="text-teal-600"> {formData.perihal}</span>
             </h1>
             <div className="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -429,7 +419,7 @@ export default function EditSuratMasuk() {
                 {/* Tombol Aksi */}
                 <div className="flex justify-end gap-4 pt-4">
                   <Link
-                    href={"/admin/surat/"}
+                    href={"/admin/surat"} // Mengarahkan ke daftar surat masuk
                     className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors font-semibold shadow-md"
                   >
                     Batal
@@ -437,9 +427,9 @@ export default function EditSuratMasuk() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className={`px-6 py-2 rounded-lg font-semibold shadow-md transition-colors ${
+                    className={`px-6 py-2 rounded-lg font-semibold shadow-md transition-colors text-white ${
                       isSubmitting
-                        ? "bg-teal-400 cursor-not-allowed"
+                        ? "bg-blue-400 cursor-not-allowed"
                         : "bg-teal-600 hover:bg-teal-700"
                     }`}
                   >

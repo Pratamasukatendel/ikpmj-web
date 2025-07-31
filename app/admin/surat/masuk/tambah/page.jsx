@@ -1,12 +1,14 @@
-// app/admin/surat/masuk/tambah/page.jsx
 "use client";
 
 import React, { useState } from "react";
 import Sidebar from "@/app/component/admin/sidebar";
 import Navbar from "@/app/component/admin/navbar";
 import Link from "next/link";
+import { useRouter } from "next/navigation"; // Import useRouter untuk redirect
 
 export default function TambahSuratMasuk() {
+  const router = useRouter(); // Inisialisasi useRouter
+
   // State untuk menyimpan nilai input form
   const [formData, setFormData] = useState({
     nomorSurat: "",
@@ -50,51 +52,34 @@ export default function TambahSuratMasuk() {
     setIsError(false);
 
     try {
-      let uploadedFileUrl = "";
-      if (formData.fileSurat) {
-        // --- SIMULASI UPLOAD FILE SURAT ---
-        // Di sini Anda akan mengimplementasikan logika upload file ke server/cloud storage.
-        // Contoh: Menggunakan FormData untuk mengirim file ke API Route Next.js
-        // const uploadFormData = new FormData();
-        // uploadFormData.append('file', formData.fileSurat);
-        // const uploadResponse = await fetch('/api/upload-surat', {
-        //   method: 'POST',
-        //   body: uploadFormData,
-        // });
-        // if (!uploadResponse.ok) {
-        //   throw new Error('Gagal mengupload file surat.');
-        // }
-        // const uploadResult = await uploadResponse.json();
-        // uploadedFileUrl = uploadResult.url; // URL file yang diupload
+      // Buat objek FormData
+      const dataToSend = new FormData();
+      dataToSend.append("nomorSurat", formData.nomorSurat);
+      dataToSend.append("tanggalSurat", formData.tanggalSurat);
+      dataToSend.append("tanggalDiterima", formData.tanggalDiterima);
+      dataToSend.append("pengirim", formData.pengirim);
+      dataToSend.append("perihal", formData.perihal);
+      dataToSend.append("jenisSurat", formData.jenisSurat);
+      dataToSend.append("catatan", formData.catatan);
 
-        // Simulasi delay upload
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        uploadedFileUrl = `https://www.africau.edu/images/default/sample.pdf?id=${Date.now()}`; // Placeholder URL PDF
-        console.log("Simulasi file diupload ke:", uploadedFileUrl);
+      // Tambahkan file jika ada
+      if (formData.fileSurat) {
+        dataToSend.append("fileSurat", formData.fileSurat);
       }
 
-      // Susun data payload sesuai struktur tabel surat masuk
-      const payload = {
-        nomor_surat: formData.nomorSurat,
-        tanggal_surat: formData.tanggalSurat,
-        tanggal_diterima: formData.tanggalDiterima,
-        pengirim: formData.pengirim,
-        perihal: formData.perihal,
-        jenis_surat: formData.jenisSurat,
-        catatan: formData.catatan,
-        file_url: uploadedFileUrl, // Menggunakan URL file yang diupload (simulasi)
-      };
+      console.log(
+        "Mengirim data surat masuk ke API:",
+        Object.fromEntries(dataToSend.entries())
+      );
 
-      console.log("Mengirim data surat masuk ke API:", payload);
-
-      // --- SIMULASI PENGIRIMAN DATA KE API ---
+      // Kirim data ke API Route Next.js
       const response = await fetch("/api/surat-masuk", {
-        // Ganti dengan URL API Anda
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+        // Penting: Jangan set Content-Type untuk FormData, browser akan mengaturnya secara otomatis
+        // headers: {
+        //   "Content-Type": "multipart/form-data", // Ini tidak perlu diset manual
+        // },
+        body: dataToSend, // Kirim objek FormData langsung
       });
 
       if (!response.ok) {
@@ -118,9 +103,9 @@ export default function TambahSuratMasuk() {
       });
 
       // Opsional: Redirect setelah beberapa saat
-      // setTimeout(() => {
-      //   router.push("/admin/surat"); // Atau ke halaman daftar surat masuk
-      // }, 1500);
+      setTimeout(() => {
+        router.push("/admin/surat"); // Redirect ke halaman daftar surat masuk
+      }, 1500);
     } catch (error) {
       console.error("Error saat menambahkan surat masuk:", error);
       setStatusMessage(`Gagal menambahkan surat masuk: ${error.message}`);
@@ -298,7 +283,7 @@ export default function TambahSuratMasuk() {
                     htmlFor="fileSurat"
                     className="mb-2 text-gray-700 font-medium"
                   >
-                    Upload File Surat (PDF, Word, Gambar, dll.)
+                    Upload File Surat (PDF, Word)
                   </label>
                   <input
                     type="file"
@@ -319,7 +304,7 @@ export default function TambahSuratMasuk() {
                 {/* Tombol Aksi */}
                 <div className="flex justify-end gap-4 pt-4">
                   <Link
-                    href={"/admin/surat/"}
+                    href={"/admin/surat"} // Mengarahkan ke daftar surat masuk
                     className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors font-semibold shadow-md"
                   >
                     Batal

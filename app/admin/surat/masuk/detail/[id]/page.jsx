@@ -1,4 +1,3 @@
-// app/admin/surat/masuk/detail/[id]/page.jsx
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -16,6 +15,17 @@ export default function DetailSuratMasuk() {
   const [isError, setIsError] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
 
+  // Fungsi untuk format tanggal (DD/MM/YYYY) dari ISO string
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    if (isNaN(date)) return ""; // Handle invalid date
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // Bulan dimulai dari 0
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -23,29 +33,32 @@ export default function DetailSuratMasuk() {
       setIsError(false);
 
       try {
-        // --- Ganti dengan fetch nyata data surat masuk berdasarkan ID dari API/database Anda ---
-        // Contoh:
-        // const response = await fetch(`/api/surat-masuk/${id}`);
-        // if (!response.ok) {
-        //   throw new Error('Gagal mengambil data surat masuk.');
-        // }
-        // const data = await response.json();
-        // setSuratData(data);
+        const response = await fetch(`/api/surat-masuk/${id}`); // Panggil API GET detail surat masuk
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(
+            errorData.message || "Gagal mengambil data surat masuk."
+          );
+        }
+        const data = await response.json();
+        const surat = data.suratMasuk; // Sesuaikan dengan struktur respons API (data.suratMasuk)
 
-        // Simulasi fetch data dengan delay
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        const fakeData = {
-          id: id,
-          nomor_surat: `00${id}/IKPMJ/VI/2025`,
-          tanggal_surat: "2025-06-01",
-          tanggal_diterima: "2025-06-03",
-          pengirim: `Pengirim Contoh ${id}`,
-          perihal: `Perihal Detail Surat Masuk ${id}: Undangan Penting`,
-          jenis_surat: id % 2 === 0 ? "Permohonan" : "Undangan",
-          catatan: `Ini adalah catatan tambahan untuk surat masuk dengan ID ${id}. Detail lebih lanjut mengenai isi surat dan tindakan yang perlu diambil.`,
-          file_url: `https://www.africau.edu/images/default/sample.pdf?id=${id}`, // Contoh URL file PDF
-        };
-        setSuratData(fakeData);
+        // Memastikan field sesuai dengan model Mongoose
+        setSuratData({
+          _id: surat._id, // ID dari MongoDB
+          nomorSurat: surat.nomorSurat,
+          tanggalSurat: surat.tanggalSurat,
+          tanggalDiterima: surat.tanggalDiterima,
+          pengirim: surat.pengirim,
+          perihal: surat.perihal,
+          jenisSurat: surat.jenisSurat,
+          catatan: surat.catatan,
+          fileSurat: surat.fileSurat, // Menggunakan nama field 'fileSurat'
+          originalFileName: surat.originalFileName, // PERBAIKAN: Mengambil originalFileName dari API
+          status: surat.status, // Jika ingin menampilkan status
+          createdAt: surat.createdAt,
+          updatedAt: surat.updatedAt,
+        });
         setStatusMessage("Data surat berhasil dimuat.");
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -60,13 +73,6 @@ export default function DetailSuratMasuk() {
       fetchData();
     }
   }, [id]);
-
-  // Fungsi untuk format tanggal (DD/MM/YYYY)
-  const formatDate = (dateString) => {
-    if (!dateString) return "";
-    const [year, month, day] = dateString.split("-");
-    return `${day}/${month}/${year}`;
-  };
 
   if (isLoading) {
     return (
@@ -105,7 +111,8 @@ export default function DetailSuratMasuk() {
         <div className="p-7 flex-1 flex flex-col items-center justify-center">
           <div className="w-full max-w-3xl">
             <h1 className="text-3xl font-bold text-gray-800 text-center mb-8">
-              Detail Surat Masuk <span className="text-teal-600">ID: {id}</span>
+              Detail Surat Masuk:{" "}
+              <span className="text-teal-600"> {suratData.perihal}</span>
             </h1>
             <div className="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
               {/* Pesan Status */}
@@ -133,7 +140,7 @@ export default function DetailSuratMasuk() {
                     Nomor Surat:
                   </p>
                   <p className="text-base font-semibold">
-                    {suratData.nomor_surat}
+                    {suratData.nomorSurat}
                   </p>
                 </div>
                 <div>
@@ -147,7 +154,7 @@ export default function DetailSuratMasuk() {
                     Tanggal Surat:
                   </p>
                   <p className="text-base">
-                    {formatDate(suratData.tanggal_surat)}
+                    {formatDate(suratData.tanggalSurat)}
                   </p>
                 </div>
                 <div>
@@ -155,7 +162,7 @@ export default function DetailSuratMasuk() {
                     Tanggal Diterima:
                   </p>
                   <p className="text-base">
-                    {formatDate(suratData.tanggal_diterima)}
+                    {formatDate(suratData.tanggalDiterima)}
                   </p>
                 </div>
                 <div className="col-span-full">
@@ -168,7 +175,7 @@ export default function DetailSuratMasuk() {
                   <p className="text-sm font-medium text-gray-500">
                     Jenis Surat:
                   </p>
-                  <p className="text-base">{suratData.jenis_surat}</p>
+                  <p className="text-base">{suratData.jenisSurat}</p>
                 </div>
                 <div className="col-span-full">
                   <p className="text-sm font-medium text-gray-500">
@@ -185,11 +192,13 @@ export default function DetailSuratMasuk() {
                   </h2>
                 </div>
                 <div className="col-span-full">
-                  {suratData.file_url ? (
+                  {suratData.fileSurat && suratData.fileSurat.length > 0 ? (
                     <a
-                      href={suratData.file_url}
+                      href={suratData.fileSurat[0]}
                       target="_blank"
                       rel="noopener noreferrer"
+                      // PERBAIKAN: Menambahkan atribut 'download' dengan nama file asli
+                      download={suratData.originalFileName || "surat_masuk.pdf"}
                       className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-md"
                     >
                       <svg
@@ -225,7 +234,7 @@ export default function DetailSuratMasuk() {
                   Edit Surat
                 </Link>
                 <Link
-                  href={"/admin/surat/"}
+                  href={"/admin/surat"}
                   className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors font-semibold shadow-md"
                 >
                   Kembali ke Daftar
