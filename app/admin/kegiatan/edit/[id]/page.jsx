@@ -41,50 +41,31 @@ export default function EditKegiatan() {
       setIsError(false);
 
       try {
-        // --- Ganti dengan fetch nyata data kegiatan berdasarkan ID dari API/database Anda ---
-        // Contoh:
-        // const response = await fetch(`/api/kegiatan/${id}`);
-        // if (!response.ok) {
-        //   throw new Error('Gagal mengambil data kegiatan.');
-        // }
-        // const data = await response.json();
-        // setFormData({
-        //   judul: data.judul,
-        //   deskripsi: data.deskripsi,
-        //   tanggalMulai: data.tanggal_mulai.substring(0, 10), // Ambil YYYY-MM-DD
-        //   jamMulai: data.tanggal_mulai.substring(11, 16), // Ambil HH:mm
-        //   tanggalSelesai: data.tanggal_selesai.substring(0, 10),
-        //   jamSelesai: data.tanggal_selesai.substring(11, 16),
-        //   lokasi: data.lokasi,
-        //   gambarPoster: null, // File input selalu dimulai dari null
-        //   currentGambarPosterUrl: data.gambar_poster || '', // URL gambar yang sudah ada
-        //   status: data.status,
-        // });
+        const response = await fetch(`/api/kegiatan/${id}`, {
+          cache: "no-store",
+        });
+        if (!response.ok) {
+          throw new Error("Gagal mengambil data kegiatan.");
+        }
+        const data = await response.json();
 
-        // Simulasi fetch data dengan delay
-        await new Promise((resolve) => setTimeout(resolve, 500)); // Simulasi loading
-        const fakeData = {
-          id: id,
-          judul: `Kegiatan ID ${id} (Edit)`,
-          deskripsi: `Ini adalah deskripsi rinci untuk kegiatan dengan ID ${id} yang sedang diedit.`,
-          tanggal_mulai: "2025-07-15T09:00:00",
-          tanggal_selesai: "2025-07-15T17:00:00",
-          lokasi: "Aula Serbaguna",
-          gambar_poster: `https://placehold.co/600x400/cccccc/000000?text=Poster_ID_${id}`,
-          status: "Aktif",
-        };
+        // Memecah format tanggal dari ISO string menjadi YYYY-MM-DD dan HH:mm
+        const tanggalMulai = data.tanggal_mulai.substring(0, 10);
+        const jamMulai = data.tanggal_mulai.substring(11, 16);
+        const tanggalSelesai = data.tanggal_selesai.substring(0, 10);
+        const jamSelesai = data.tanggal_selesai.substring(11, 16);
 
         setFormData({
-          judul: fakeData.judul,
-          deskripsi: fakeData.deskripsi,
-          tanggalMulai: fakeData.tanggal_mulai.substring(0, 10),
-          jamMulai: fakeData.tanggal_mulai.substring(11, 16),
-          tanggalSelesai: fakeData.tanggal_selesai.substring(0, 10),
-          jamSelesai: fakeData.tanggal_selesai.substring(11, 16),
-          lokasi: fakeData.lokasi,
-          gambarPoster: null, // Selalu null untuk input file
-          currentGambarPosterUrl: fakeData.gambar_poster, // Simpan URL yang ada
-          status: fakeData.status,
+          judul: data.judul,
+          deskripsi: data.deskripsi,
+          tanggalMulai,
+          jamMulai,
+          tanggalSelesai,
+          jamSelesai,
+          lokasi: data.lokasi,
+          gambarPoster: null, // File input selalu dimulai dari null
+          currentGambarPosterUrl: data.gambar_poster || "", // Simpan URL gambar yang sudah ada
+          status: data.status,
         });
 
         setStatusMessage("Data kegiatan berhasil dimuat.");
@@ -131,25 +112,27 @@ export default function EditKegiatan() {
       let finalGambarPosterUrl = formData.currentGambarPosterUrl; // Default ke URL yang sudah ada
 
       if (formData.gambarPoster) {
-        // --- SIMULASI UPLOAD FILE BARU ---
-        // Di sini Anda akan mengimplementasikan logika upload file ke server/cloud storage.
-        // Contoh: Menggunakan FormData untuk mengirim file ke API Route Next.js
-        // const uploadFormData = new FormData();
-        // uploadFormData.append('file', formData.gambarPoster);
-        // const uploadResponse = await fetch('/api/upload-gambar', {
-        //   method: 'POST',
-        //   body: uploadFormData,
-        // });
-        // if (!uploadResponse.ok) {
-        //   throw new Error('Gagal mengupload gambar baru.');
-        // }
-        // const uploadResult = await uploadResponse.json();
-        // finalGambarPosterUrl = uploadResult.url; // URL gambar yang diupload
+        // Menggunakan FormData untuk mengirim file ke API Route Next.js
+        const uploadFormData = new FormData();
+        // Menggunakan nama field 'file' yang konsisten dengan API terpadu
+        uploadFormData.append("file", formData.gambarPoster);
 
-        // Simulasi delay upload
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        finalGambarPosterUrl = `https://placehold.co/600x400/aabbcc/ffffff?text=Updated_Poster_${Date.now()}`;
-        console.log("Simulasi gambar baru diupload ke:", finalGambarPosterUrl);
+        // Panggil API upload terpadu dengan parameter folder
+        const uploadResponse = await fetch(
+          "/api/upload?folder=kegiatan_ikpmj",
+          {
+            method: "POST",
+            body: uploadFormData,
+          }
+        );
+
+        if (!uploadResponse.ok) {
+          const errorData = await uploadResponse.json();
+          throw new Error(errorData.message || "Gagal mengunggah gambar baru.");
+        }
+
+        const uploadResult = await uploadResponse.json();
+        finalGambarPosterUrl = uploadResult.url; // URL gambar dari Cloudinary
       }
 
       // Gabungkan tanggal dan jam menjadi format ISO 8601 (YYYY-MM-DDTHH:mm:ss)
@@ -170,10 +153,8 @@ export default function EditKegiatan() {
 
       console.log("Mengirim data edit ke API:", payload);
 
-      // --- SIMULASI PENGIRIMAN DATA UPDATE KE API ---
       const response = await fetch(`/api/kegiatan/${id}`, {
-        // Ganti dengan URL API Anda
-        method: "PUT", // Atau PATCH
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
@@ -189,7 +170,6 @@ export default function EditKegiatan() {
 
       setStatusMessage("Perubahan kegiatan berhasil disimpan!");
       setIsError(false);
-      // Opsional: Redirect setelah beberapa saat
       setTimeout(() => {
         router.push("/admin/kegiatan"); // Redirect ke halaman daftar kegiatan
       }, 1500);
@@ -223,7 +203,8 @@ export default function EditKegiatan() {
         <div className="p-7 flex-1 flex flex-col items-center justify-center">
           <div className="w-full max-w-2xl">
             <h1 className="text-3xl font-bold text-gray-800 text-center mb-8">
-              Edit Kegiatan <span className="text-teal-600">ID: {id}</span>
+              Edit Kegiatan{" "}
+              <span className="text-teal-600">: {formData.judul}</span>
             </h1>
             <div className="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -447,7 +428,7 @@ export default function EditKegiatan() {
                   <button
                     type="submit"
                     disabled={isSubmitting} // Disable tombol saat submit
-                    className={`px-6 py-2 rounded-lg font-semibold shadow-md transition-colors ${
+                    className={`px-6 py-2 rounded-lg font-semibold shadow-md transition-colors text-white ${
                       isSubmitting
                         ? "bg-teal-400 cursor-not-allowed"
                         : "bg-teal-600 hover:bg-teal-700"

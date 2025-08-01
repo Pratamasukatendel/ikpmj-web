@@ -2,11 +2,13 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import Sidebar from "@/app/component/admin/sidebar";
 import Navbar from "@/app/component/admin/navbar";
 import Link from "next/link";
 
 export default function TambahKegiatan() {
+  const router = useRouter(); // Inisialisasi router
   // State untuk menyimpan nilai input form
   const [formData, setFormData] = useState({
     judul: "", // Nama kegiatan
@@ -16,7 +18,7 @@ export default function TambahKegiatan() {
     tanggalSelesai: "", // Format: YYYY-mm-dd
     jamSelesai: "", // Format: hh:mm
     lokasi: "",
-    gambarPoster: null, // Mengubah ini untuk menyimpan objek File, bukan URL
+    gambarPoster: null, // Mengubah ini untuk menyimpan objek File
     status: "Terencana", // Status default
   });
 
@@ -53,25 +55,27 @@ export default function TambahKegiatan() {
     try {
       let uploadedImageUrl = "";
       if (formData.gambarPoster) {
-        // --- SIMULASI UPLOAD FILE ---
-        // Di sini Anda akan mengimplementasikan logika upload file ke server/cloud storage.
-        // Contoh: Menggunakan FormData untuk mengirim file ke API Route Next.js
-        // const uploadFormData = new FormData();
-        // uploadFormData.append('file', formData.gambarPoster);
-        // const uploadResponse = await fetch('/api/upload-gambar', {
-        //   method: 'POST',
-        //   body: uploadFormData,
-        // });
-        // if (!uploadResponse.ok) {
-        //   throw new Error('Gagal mengupload gambar.');
-        // }
-        // const uploadResult = await uploadResponse.json();
-        // uploadedImageUrl = uploadResult.url; // URL gambar yang diupload
+        // Menggunakan FormData untuk mengirim file ke API Route Next.js
+        const uploadFormData = new FormData();
+        // Menggunakan nama field 'file' yang konsisten dengan API terpadu
+        uploadFormData.append("file", formData.gambarPoster);
 
-        // Simulasi delay upload
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        uploadedImageUrl = `https://placehold.co/600x400/aabbcc/ffffff?text=Poster_Kegiatan_${Date.now()}`;
-        console.log("Simulasi gambar diupload ke:", uploadedImageUrl);
+        // Panggil API upload terpadu dengan parameter folder
+        const uploadResponse = await fetch(
+          "/api/upload?folder=kegiatan_ikpmj",
+          {
+            method: "POST",
+            body: uploadFormData,
+          }
+        );
+
+        if (!uploadResponse.ok) {
+          const errorData = await uploadResponse.json();
+          throw new Error(errorData.message || "Gagal mengunggah gambar.");
+        }
+
+        const uploadResult = await uploadResponse.json();
+        uploadedImageUrl = uploadResult.url; // URL gambar dari Cloudinary
       }
 
       // Gabungkan tanggal dan jam menjadi format ISO 8601 (YYYY-MM-DDTHH:mm:ss)
@@ -85,16 +89,15 @@ export default function TambahKegiatan() {
         tanggal_mulai,
         tanggal_selesai,
         lokasi: formData.lokasi,
-        gambar_poster: uploadedImageUrl, // Menggunakan URL gambar yang diupload (simulasi)
+        gambar_poster: uploadedImageUrl, // Menggunakan URL gambar dari Cloudinary
         status: formData.status,
         user_id: "admin_ikpmj", // Contoh user_id, bisa diambil dari session/auth
       };
 
       console.log("Mengirim data kegiatan ke API:", payload);
 
-      // --- SIMULASI PENGIRIMAN DATA KE API ---
+      // --- PENGIRIMAN DATA KE API ---
       const response = await fetch("/api/kegiatan", {
-        // Ganti dengan URL API Anda
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -110,23 +113,10 @@ export default function TambahKegiatan() {
       setStatusMessage("Kegiatan berhasil ditambahkan!");
       setIsError(false);
 
-      // Reset form
-      setFormData({
-        judul: "",
-        deskripsi: "",
-        tanggalMulai: "",
-        jamMulai: "",
-        tanggalSelesai: "",
-        jamSelesai: "",
-        lokasi: "",
-        gambarPoster: null, // Reset file input
-        status: "Terencana",
-      });
-
-      // Opsional: Redirect setelah beberapa saat
-      // setTimeout(() => {
-      //   router.push("/admin/kegiatan");
-      // }, 1500);
+      // Redirect setelah beberapa saat
+      setTimeout(() => {
+        router.push("/admin/kegiatan");
+      }, 1500); // Redirect setelah 1.5 detik
     } catch (error) {
       console.error("Error saat menambahkan kegiatan:", error);
       setStatusMessage(`Gagal menambahkan kegiatan: ${error.message}`);
@@ -302,11 +292,11 @@ export default function TambahKegiatan() {
                     Upload Gambar Poster
                   </label>
                   <input
-                    type="file" // Mengubah tipe input menjadi file
+                    type="file"
                     id="gambarPoster"
                     name="gambarPoster"
-                    accept="image/*" // Hanya menerima file gambar
-                    onChange={handleFileChange} // Menggunakan handler khusus untuk file
+                    accept="image/*"
+                    onChange={handleFileChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-md file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors"
                   />
                   {formData.gambarPoster && (
@@ -351,7 +341,7 @@ export default function TambahKegiatan() {
                   <button
                     type="submit"
                     disabled={isSubmitting} // Disable tombol saat submit
-                    className={`px-6 py-2 rounded-lg font-semibold shadow-md transition-colors ${
+                    className={`px-6 py-2 rounded-lg font-semibold shadow-md transition-colors text-white ${
                       isSubmitting
                         ? "bg-teal-400 cursor-not-allowed"
                         : "bg-teal-600 hover:bg-teal-700"
