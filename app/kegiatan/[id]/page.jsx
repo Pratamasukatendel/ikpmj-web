@@ -7,75 +7,6 @@ import Link from "next/link";
 import Navbar from "@/app/component/user/navbar"; // Menggunakan Navbar dari folder user
 import Footer from "@/app/component/user/footer"; // Menggunakan Footer dari folder user
 
-// Data dummy untuk simulasi fetch dari API (mencakup semua status untuk simulasi detail)
-const dummyAllKegiatanData = [
-  {
-    id: 1,
-    judul: "Rapat Perdana Internal IKPMJ",
-    deskripsi:
-      "Rapat perdana untuk membahas struktur organisasi dan rencana kerja awal tahun. Pertemuan ini sangat penting untuk menyelaraskan visi dan misi seluruh divisi serta menetapkan target-target yang realistis untuk periode mendatang. Diharapkan kehadiran seluruh pengurus dan koordinator divisi.",
-    tanggalMulai: "2025-07-25",
-    tanggalSelesai: "2025-07-25",
-    lokasi: "Ruang Rapat Kampus A",
-    status: "Aktif",
-    imageUrl:
-      "https://placehold.co/800x450/e0e0e0/000000?text=Rapat+Internal+Detail",
-    lampiranUrl: "https://www.africau.edu/images/default/sample.pdf", // Contoh lampiran
-  },
-  {
-    id: 2,
-    judul: "Workshop Desain Grafis Dasar",
-    deskripsi:
-      "Workshop gratis untuk anggota IKPMJ yang ingin belajar dasar-dasar desain grafis menggunakan Figma. Materi akan mencakup pengenalan Figma, tools dasar, layouting, dan tips membuat desain yang menarik. Peserta diharapkan membawa laptop masing-masing. Kuota terbatas!",
-    tanggalMulai: "2025-08-10",
-    tanggalSelesai: "2025-08-11",
-    lokasi: "Lab Komputer Fakultas X",
-    status: "Aktif",
-    imageUrl:
-      "https://placehold.co/800x450/e0e0e0/000000?text=Workshop+Desain+Detail",
-    lampiranUrl: null,
-  },
-  {
-    id: 3,
-    judul: "Bakti Sosial Panti Asuhan",
-    deskripsi:
-      "Kegiatan rutin bakti sosial ke panti asuhan 'Cahaya Harapan'. Kami akan mengumpulkan donasi berupa pakaian layak pakai, buku, dan sembako. Selain itu, akan ada interaksi langsung dengan anak-anak panti melalui berbagai permainan edukatif dan sesi motivasi. Mari berbagi kebahagiaan!",
-    tanggalMulai: "2025-09-01",
-    tanggalSelesai: "2025-09-01",
-    lokasi: "Panti Asuhan Cahaya Harapan",
-    status: "Terencana",
-    imageUrl:
-      "https://placehold.co/800x450/e0e0e0/000000?text=Bakti+Sosial+Detail",
-    lampiranUrl: null,
-  },
-  {
-    id: 4,
-    judul: "Turnamen Futsal Antar Angkatan (Selesai)",
-    deskripsi:
-      "Turnamen futsal tahunan untuk mempererat silaturahmi dan menjaga kebugaran antar anggota IKPMJ. Acara berlangsung meriah dengan partisipasi dari berbagai angkatan. Selamat kepada tim pemenang!",
-    tanggalMulai: "2025-06-05",
-    tanggalSelesai: "2025-06-07",
-    lokasi: "Lapangan Futsal XYZ",
-    status: "Selesai",
-    imageUrl:
-      "https://placehold.co/800x450/e0e0e0/000000?text=Turnamen+Futsal+Detail",
-    lampiranUrl: null,
-  },
-  {
-    id: 5,
-    judul: "Webinar Kesiapan Karir (Selesai)",
-    deskripsi:
-      "Webinar online dengan pembicara ahli dari HRD perusahaan terkemuka tentang tips dan trik menghadapi dunia kerja setelah lulus kuliah. Materi meliputi pembuatan CV, teknik wawancara, dan pengembangan soft skill. Terima kasih atas antusiasme peserta!",
-    tanggalMulai: "2025-05-20",
-    tanggalSelesai: "2025-05-20",
-    lokasi: "Online (Zoom Meeting)",
-    status: "Selesai",
-    imageUrl:
-      "https://placehold.co/800x450/e0e0e0/000000?text=Webinar+Karir+Detail",
-    lampiranUrl: null,
-  },
-];
-
 export default function PublicKegiatanDetailPage() {
   const { id } = useParams(); // Mengambil ID dari URL
   const [kegiatanData, setKegiatanData] = useState(null);
@@ -89,38 +20,35 @@ export default function PublicKegiatanDetailPage() {
       setStatusMessage("");
       setIsError(false);
 
+      if (!id) {
+        setIsLoading(false);
+        setIsError(true);
+        setStatusMessage("ID kegiatan tidak ditemukan di URL.");
+        return;
+      }
+
       try {
-        // --- Ganti dengan fetch nyata data kegiatan berdasarkan ID dari API Anda ---
-        // Contoh: const response = await fetch(`/api/public/kegiatan/${id}`);
-        // if (!response.ok) {
-        //   throw new Error('Gagal mengambil data kegiatan.');
-        // }
-        // const data = await response.json();
-        // // Pastikan hanya kegiatan 'Aktif' atau 'Terencana' yang bisa diakses di detail publik
-        // if (data.status !== 'Aktif' && data.status !== 'Terencana' && data.status !== 'Selesai') {
-        //   throw new Error('Kegiatan tidak tersedia untuk publik atau tidak ditemukan.');
-        // }
-        // setKegiatanData(data);
+        const response = await fetch(`/api/kegiatan/${id}`, {
+          cache: "no-store",
+        });
 
-        // Simulasi fetch data dengan delay
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        const foundData = dummyAllKegiatanData.find(
-          (item) => item.id.toString() === id
-        );
-
-        // Filter untuk memastikan hanya kegiatan yang relevan untuk publik yang ditampilkan
-        // Yaitu status 'Aktif', 'Terencana', atau 'Selesai' (untuk galeri)
-        if (
-          !foundData ||
-          (foundData.status !== "Aktif" &&
-            foundData.status !== "Terencana" &&
-            foundData.status !== "Selesai")
-        ) {
-          throw new Error(
-            "Kegiatan tidak tersedia untuk publik atau tidak ditemukan."
-          );
+        if (!response.ok) {
+          throw new Error("Gagal mengambil data kegiatan.");
         }
-        setKegiatanData(foundData);
+        const data = await response.json();
+
+        // Di halaman publik, kita hanya ingin menampilkan kegiatan yang relevan.
+        // Asumsi: 'Aktif', 'Terencana', dan 'Selesai' adalah status publik.
+        if (
+          data.status !== "Aktif" &&
+          data.status !== "Terencana" &&
+          data.status !== "Selesai"
+        ) {
+          throw new Error("Kegiatan tidak tersedia untuk publik.");
+        }
+
+        setKegiatanData(data);
+
         setStatusMessage("Detail kegiatan berhasil dimuat.");
       } catch (error) {
         console.error("Error fetching kegiatan detail:", error);
@@ -131,9 +59,7 @@ export default function PublicKegiatanDetailPage() {
       }
     };
 
-    if (id) {
-      fetchData();
-    }
+    fetchData();
   }, [id]);
 
   // Fungsi untuk format tanggal (DD MMMM YYYY)
@@ -190,15 +116,15 @@ export default function PublicKegiatanDetailPage() {
                 d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
               />
             </svg>
-            Kembali ke Semua Kegiatan
+            Kembali ke kegiatan
           </Link>
 
           <div className="bg-white rounded-lg shadow-lg p-8 border border-gray-200">
-            {kegiatanData.imageUrl && (
+            {kegiatanData.gambar_poster && (
               <img
-                src={kegiatanData.imageUrl}
+                src={kegiatanData.gambar_poster}
                 alt={kegiatanData.judul}
-                className="w-full h-64 object-cover rounded-md mb-6"
+                className="w-full aspect-[16/9] object-cover rounded-md mb-6"
                 onError={(e) => {
                   e.target.onerror = null;
                   e.target.src =
@@ -211,9 +137,9 @@ export default function PublicKegiatanDetailPage() {
               {kegiatanData.judul}
             </h1>
             <p className="text-sm text-gray-500 mb-6">
-              Tanggal: {formatDate(kegiatanData.tanggalMulai)}
-              {kegiatanData.tanggalMulai !== kegiatanData.tanggalSelesai &&
-                ` - ${formatDate(kegiatanData.tanggalSelesai)}`}
+              Tanggal: {formatDate(kegiatanData.tanggal_mulai)}
+              {kegiatanData.tanggal_mulai !== kegiatanData.tanggal_selesai &&
+                ` - ${formatDate(kegiatanData.tanggal_selesai)}`}
               {kegiatanData.lokasi && ` | Lokasi: ${kegiatanData.lokasi}`}
             </p>
 
@@ -221,35 +147,8 @@ export default function PublicKegiatanDetailPage() {
               <p className="whitespace-pre-wrap">{kegiatanData.deskripsi}</p>
             </div>
 
-            {kegiatanData.lampiranUrl && (
-              <div className="mb-6">
-                <p className="text-lg font-semibold text-gray-800 mb-2">
-                  Lampiran Kegiatan:
-                </p>
-                <a
-                  href={kegiatanData.lampiranUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-md"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-5 h-5 mr-2"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
-                    />
-                  </svg>
-                  Unduh Lampiran
-                </a>
-              </div>
-            )}
+            {/* Lampiran tidak ada dalam model, jadi saya hapus. Jika Anda ingin menambahkannya, 
+            silakan beritahu saya. */}
           </div>
         </div>
       </div>

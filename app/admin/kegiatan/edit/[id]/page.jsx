@@ -35,6 +35,50 @@ export default function EditAnggota() {
 
   // useEffect untuk memuat data anggota saat komponen pertama kali dirender
   useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      setStatusMessage(""); // Reset pesan status
+      setIsError(false);
+
+      try {
+        const response = await fetch(`/api/kegiatan/${id}`, {
+          cache: "no-store",
+        });
+        if (!response.ok) {
+          throw new Error("Gagal mengambil data kegiatan.");
+        }
+        const data = await response.json();
+
+        // Memecah format tanggal dari ISO string menjadi YYYY-MM-DD dan HH:mm
+        const tanggalMulai = data.tanggal_mulai.substring(0, 10);
+        const jamMulai = data.tanggal_mulai.substring(11, 16);
+        const tanggalSelesai = data.tanggal_selesai.substring(0, 10);
+        const jamSelesai = data.tanggal_selesai.substring(11, 16);
+
+        setFormData({
+          judul: data.judul,
+          deskripsi: data.deskripsi,
+          tanggalMulai,
+          jamMulai,
+          tanggalSelesai,
+          jamSelesai,
+          lokasi: data.lokasi,
+          gambarPoster: null, // File input selalu dimulai dari null
+          currentGambarPosterUrl: data.gambar_poster || "", // Simpan URL gambar yang sudah ada
+          status: data.status,
+        });
+
+        setStatusMessage("Data kegiatan berhasil dimuat.");
+        setIsError(false);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setStatusMessage(`Gagal memuat data kegiatan: ${error.message}`);
+        setIsError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     if (id) {
       const fetchAnggota = async () => {
         setIsLoading(true);
@@ -101,28 +145,28 @@ export default function EditAnggota() {
     try {
       let finalProfileImageUrl = formData.profile_image_url;
 
-      // Jika ada file gambar baru yang dipilih, upload ke API /api/upload
-      if (formData.profileImage) {
+      if (formData.gambarPoster) {
+        // Menggunakan FormData untuk mengirim file ke API Route Next.js
         const uploadFormData = new FormData();
-        uploadFormData.append("profileImage", formData.profileImage); // Nama field harus sesuai dengan yang diharapkan API
+        // Menggunakan nama field 'file' yang konsisten dengan API terpadu
+        uploadFormData.append("file", formData.gambarPoster);
 
-        const uploadResponse = await fetch("/api/upload", {
-          method: "POST",
-          body: uploadFormData, // Mengirim FormData
-        });
+        // Panggil API upload terpadu dengan parameter folder
+        const uploadResponse = await fetch(
+          "/api/upload?folder=kegiatan_ikpmj",
+          {
+            method: "POST",
+            body: uploadFormData,
+          }
+        );
 
         if (!uploadResponse.ok) {
           const errorData = await uploadResponse.json();
-          throw new Error(
-            errorData.message || "Gagal mengupload gambar profil."
-          );
+          throw new Error(errorData.message || "Gagal mengunggah gambar baru.");
         }
+
         const uploadResult = await uploadResponse.json();
-        finalProfileImageUrl = uploadResult.url; // Ambil URL dari respons API upload
-        console.log(
-          "Gambar profil berhasil diupload ke:",
-          finalProfileImageUrl
-        );
+        finalGambarPosterUrl = uploadResult.url; // URL gambar dari Cloudinary
       }
 
       // Susun data payload sesuai struktur yang diharapkan oleh API MongoDB Anda
@@ -141,8 +185,7 @@ export default function EditAnggota() {
 
       console.log("Mengirim data update anggota ke API:", payload);
 
-      // Panggil API Route Next.js Anda dengan metode PUT
-      const response = await fetch("/api/anggota", {
+      const response = await fetch(`/api/kegiatan/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json", // Tetap mengirim JSON untuk data anggota
@@ -161,7 +204,6 @@ export default function EditAnggota() {
       setStatusMessage("Anggota berhasil diupdate!");
       setIsError(false);
 
-      // Opsional: Redirect kembali ke halaman daftar setelah update
       setTimeout(() => {
         router.push("/admin/anggota");
       }, 1500);
@@ -201,7 +243,8 @@ export default function EditAnggota() {
         <div className="p-7 flex-1 flex flex-col items-center justify-center">
           <div className="w-full max-w-2xl">
             <h1 className="text-3xl font-bold text-gray-800 text-center mb-8">
-              Edit Anggota
+              Edit Kegiatan{" "}
+              <span className="text-teal-600">: {formData.judul}</span>
             </h1>
             <div className="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -423,8 +466,8 @@ export default function EditAnggota() {
                   </Link>
                   <button
                     type="submit"
-                    disabled={isSubmitting}
-                    className={`px-6 py-2 rounded-lg font-semibold shadow-md transition-colors ${
+                    disabled={isSubmitting} // Disable tombol saat submit
+                    className={`px-6 py-2 rounded-lg font-semibold shadow-md transition-colors text-white ${
                       isSubmitting
                         ? "bg-blue-400 cursor-not-allowed"
                         : "bg-blue-600 hover:bg-blue-700"

@@ -1,43 +1,107 @@
 // app/admin/kegiatan/page.jsx
 "use client"; // Pastikan ini ada jika menggunakan hooks atau interaktivitas klien
 
-import React, { useState } from "react"; // Import useState
+import React, { useState, useEffect } from "react"; // Import useState dan useEffect
 import Sidebar from "@/app/component/admin/sidebar";
 import Navbar from "@/app/component/admin/navbar";
 import TabelKegiatan from "@/app/component/admin/tabelKegiatan";
 import Link from "next/link";
-// import Image from "next/image"; // Tidak digunakan lagi, diganti dengan SVG inline
 
 export default function Kegiatan() {
   const [searchTerm, setSearchTerm] = useState(""); // State untuk input pencarian
-  const [filterStatus, setFilterStatus] = useState("all"); // State untuk filter kegiatan ('all', 'inactive')
+  const [filterStatus, setFilterStatus] = useState("all"); // State untuk filter kegiatan ('all', 'selesai', dll)
+  const [kegiatanData, setKegiatanData] = useState([]); // State untuk menyimpan data dari API
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
+  const [statusMessage, setStatusMessage] = useState("");
+  const [selesaiCount, setSelesaiCount] = useState(0); // State untuk menyimpan hitungan kegiatan "Selesai"
+
+  // Fungsi untuk mengambil data kegiatan dari API
+  const fetchKegiatanData = async () => {
+    setIsLoading(true);
+    setStatusMessage("Sedang memuat data...");
+    setIsError(false);
+    try {
+      const response = await fetch("/api/kegiatan", {
+        cache: "no-store",
+      });
+      if (!response.ok) {
+        throw new Error("Gagal mengambil data kegiatan.");
+      }
+      const data = await response.json();
+      setKegiatanData(data);
+
+      // Menghitung jumlah kegiatan dengan status "Selesai"
+      const count = data.filter((item) => item.status === "Selesai").length;
+      setSelesaiCount(count);
+
+      setStatusMessage("Data kegiatan berhasil dimuat.");
+    } catch (error) {
+      console.error("Error fetching kegiatan:", error);
+      setStatusMessage("Gagal memuat data kegiatan.");
+      setIsError(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Fungsi untuk menjalankan penghapusan dari TabelKegiatan
+  const executeHapus = async (id) => {
+    setStatusMessage("Sedang menghapus...");
+    setIsError(false);
+
+    try {
+      const response = await fetch(`/api/kegiatan/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ _id: id }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Gagal menghapus kegiatan.");
+      }
+
+      // Memperbarui state kegiatanData secara optimis
+      const updatedKegiatan = kegiatanData.filter((item) => item._id !== id);
+      setKegiatanData(updatedKegiatan);
+
+      const count = updatedKegiatan.filter(
+        (item) => item.status === "Selesai"
+      ).length;
+      setSelesaiCount(count);
+
+      setStatusMessage("Kegiatan berhasil dihapus!");
+      setIsError(false);
+    } catch (error) {
+      console.error("Error saat menghapus kegiatan:", error);
+      setStatusMessage(`Gagal menghapus kegiatan: ${error.message}`);
+      setIsError(true);
+    }
+  };
+
+  useEffect(() => {
+    fetchKegiatanData();
+  }, []);
 
   // Handler untuk perubahan input pencarian
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
-    // Di sini Anda bisa menambahkan logika untuk memfilter data TabelKegiatan
-    // berdasarkan searchTerm, mungkin dengan passing searchTerm sebagai prop ke TabelKegiatan
   };
 
   // Handler untuk perubahan filter status
   const handleFilterChange = (status) => {
     setFilterStatus(status);
-    // Di sini Anda bisa menambahkan logika untuk memfilter data TabelKegiatan
-    // berdasarkan filterStatus
   };
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      {" "}
-      {/* Menambahkan min-h-screen dan bg-gray-100 */}
       <Sidebar />
       <div className="flex-1 flex flex-col">
-        {" "}
-        {/* Menggunakan flex-1 untuk mengisi sisa lebar */}
         <Navbar />
         <div className="p-7 flex-1">
-          {" "}
-          {/* flex-1 agar konten mengisi ruang vertikal */}
           <header className="bg-white p-6 rounded-lg shadow-md mb-8">
             <h1 className="text-3xl font-bold text-gray-800">
               Manajemen Kegiatan
@@ -47,8 +111,6 @@ export default function Kegiatan() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
             {/* Filter Kegiatan */}
             <ul className="flex gap-6 text-lg font-medium">
-              {" "}
-              {/* Mengubah gap dan ukuran font */}
               <li>
                 <button
                   onClick={() => handleFilterChange("all")}
@@ -63,22 +125,20 @@ export default function Kegiatan() {
               </li>
               <li>
                 <button
-                  onClick={() => handleFilterChange("inactive")}
+                  onClick={() => handleFilterChange("selesai")}
                   className={`pb-1 border-b-2 transition-colors duration-200 ${
-                    filterStatus === "inactive"
+                    filterStatus === "selesai"
                       ? "border-amber-500 text-amber-500"
                       : "border-transparent text-gray-600 hover:text-gray-800"
                   }`}
                 >
-                  Tidak Aktif (1)
+                  Selesai ({selesaiCount})
                 </button>
               </li>
             </ul>
 
             {/* Pencarian dan Tombol Tambah */}
             <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-              {" "}
-              {/* Responsif untuk pencarian dan tombol */}
               <input
                 id="search"
                 name="search"
@@ -92,7 +152,6 @@ export default function Kegiatan() {
                 href={"/admin/kegiatan/tambah"}
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-semibold shadow-md flex items-center justify-center gap-2 w-full sm:w-auto"
               >
-                {/* SVG inline untuk ikon plus */}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -112,10 +171,14 @@ export default function Kegiatan() {
           {/* Tabel Kegiatan */}
           <div className="bg-white shadow-lg rounded-lg p-6 border border-gray-200">
             <TabelKegiatan
+              kegiatan={kegiatanData}
               searchTerm={searchTerm}
               filterStatus={filterStatus}
-            />{" "}
-            {/* Meneruskan props ke TabelKegiatan */}
+              isLoading={isLoading}
+              isError={isError}
+              statusMessage={statusMessage}
+              executeHapus={executeHapus}
+            />
           </div>
         </div>
       </div>

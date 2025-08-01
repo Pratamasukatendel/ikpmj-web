@@ -3,119 +3,16 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import Navbar from "../component/user/navbar"; // Menggunakan Navbar dari folder user
-import Footer from "../component/user/footer"; // Menggunakan Footer dari folder user
 
-// Data dummy untuk simulasi fetch dari API
-const dummyKegiatanData = [
-  {
-    id: 1,
-    judul: "Rapat Perdana Internal IKPMJ",
-    deskripsi:
-      "Rapat perdana untuk membahas struktur organisasi dan rencana kerja awal tahun.",
-    tanggalMulai: "2025-07-25",
-    tanggalSelesai: "2025-07-25",
-    status: "Aktif", // Sedang berlangsung/Aktif
-    imageUrl: "https://placehold.co/400x250/e0e0e0/000000?text=Rapat+Internal",
-  },
-  {
-    id: 2,
-    judul: "Workshop Desain Grafis Dasar",
-    deskripsi:
-      "Workshop gratis untuk anggota IKPMJ yang ingin belajar dasar-dasar desain grafis menggunakan Figma.",
-    tanggalMulai: "2025-08-10",
-    tanggalSelesai: "2025-08-11",
-    status: "Aktif", // Sedang berlangsung/Aktif
-    imageUrl: "https://placehold.co/400x250/e0e0e0/000000?text=Workshop+Desain",
-  },
-  {
-    id: 3,
-    judul: "Bakti Sosial Panti Asuhan",
-    deskripsi:
-      "Kegiatan rutin bakti sosial ke panti asuhan, mengumpulkan donasi dan berinteraksi dengan anak-anak.",
-    tanggalMulai: "2025-09-01",
-    tanggalSelesai: "2025-09-01",
-    status: "Terencana", // Akan datang
-    imageUrl: "https://placehold.co/400x250/e0e0e0/000000?text=Bakti+Sosial",
-  },
-  {
-    id: 4,
-    judul: "Turnamen Futsal Antar Angkatan",
-    deskripsi:
-      "Turnamen futsal untuk mempererat silaturahmi dan menjaga kebugaran antar anggota IKPMJ.",
-    tanggalMulai: "2025-06-05",
-    tanggalSelesai: "2025-06-07",
-    status: "Selesai", // Sudah selesai
-    imageUrl: "https://placehold.co/400x250/e0e0e0/000000?text=Turnamen+Futsal",
-  },
-  {
-    id: 5,
-    judul: "Webinar Kesiapan Karir",
-    deskripsi:
-      "Webinar online dengan pembicara ahli tentang tips dan trik menghadapi dunia kerja setelah lulus kuliah.",
-    tanggalMulai: "2025-05-20",
-    tanggalSelesai: "2025-05-20",
-    status: "Selesai", // Sudah selesai
-    imageUrl: "https://placehold.co/400x250/e0e0e0/000000?text=Webinar+Karir",
-  },
-  {
-    id: 6,
-    judul: "Malam Keakraban IKPMJ",
-    deskripsi:
-      "Acara tahunan untuk menyambut anggota baru dan mempererat kebersamaan seluruh anggota.",
-    tanggalMulai: "2025-04-10",
-    tanggalSelesai: "2025-04-10",
-    status: "Selesai", // Sudah selesai
-    imageUrl: "https://placehold.co/400x250/e0e0e0/000000?text=Malam+Keakraban",
-  },
-  {
-    id: 7, // Tambahan data untuk menguji batasan 2 baris
-    judul: "Outbound Kepemimpinan",
-    deskripsi:
-      "Kegiatan outbound untuk melatih jiwa kepemimpinan dan kerjasama tim.",
-    tanggalMulai: "2025-03-01",
-    tanggalSelesai: "2025-03-02",
-    status: "Selesai",
-    imageUrl: "https://placehold.co/400x250/e0e0e0/000000?text=Outbound",
-  },
-  {
-    id: 8, // Tambahan data untuk menguji batasan 2 baris
-    judul: "Donor Darah Rutin",
-    deskripsi:
-      "Kegiatan donor darah bekerja sama dengan PMI untuk membantu sesama.",
-    tanggalMulai: "2025-02-15",
-    tanggalSelesai: "2025-02-15",
-    status: "Selesai",
-    imageUrl: "https://placehold.co/400x250/e0e0e0/000000?text=Donor+Darah",
-  },
-  {
-    id: 9, // Tambahan data untuk menguji batasan 2 baris
-    judul: "Donor Darah Rutin",
-    deskripsi:
-      "Kegiatan donor darah bekerja sama dengan PMI untuk membantu sesama.",
-    tanggalMulai: "2025-02-15",
-    tanggalSelesai: "2025-02-15",
-    status: "Selesai",
-    imageUrl: "https://placehold.co/400x250/e0e0e0/000000?text=Donor+Darah",
-  },
-  {
-    id: 10, // Tambahan data untuk menguji batasan 2 baris
-    judul: "Donor Darah Rutin",
-    deskripsi:
-      "Kegiatan donor darah bekerja sama dengan PMI untuk membantu sesama.",
-    tanggalMulai: "2025-02-15",
-    tanggalSelesai: "2025-02-15",
-    status: "Selesai",
-    imageUrl: "https://placehold.co/400x250/e0e0e0/000000?text=Donor+Darah",
-  },
-];
+import Navbar from "../component/user/navbar";
+import Footer from "../component/user/footer";
 
 export default function PublicKegiatanPage() {
   const [kegiatanAktif, setKegiatanAktif] = useState([]);
   const [kegiatanSelesaiUntukGaleri, setKegiatanSelesaiUntukGaleri] = useState(
     []
-  ); // Data terbatas untuk galeri
-  const [hasMoreSelesaiKegiatan, setHasMoreSelesaiKegiatan] = useState(false); // Untuk tombol "Lihat Semua"
+  );
+  const [hasMoreSelesaiKegiatan, setHasMoreSelesaiKegiatan] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
@@ -126,17 +23,22 @@ export default function PublicKegiatanPage() {
       setStatusMessage("");
       setIsError(false);
       try {
-        // Simulasi delay fetch data
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        const response = await fetch("/api/kegiatan", {
+          cache: "no-store",
+        });
+        if (!response.ok) {
+          throw new Error("Gagal mengambil data kegiatan.");
+        }
+        const allKegiatan = await response.json();
 
         // Filter kegiatan untuk "Daftar Kegiatan" (Aktif/Terencana)
-        const activeAndPlanned = dummyKegiatanData.filter(
+        const activeAndPlanned = allKegiatan.filter(
           (item) => item.status === "Aktif" || item.status === "Terencana"
         );
         setKegiatanAktif(activeAndPlanned);
 
         // Filter semua kegiatan yang sudah selesai
-        const allCompletedActivities = dummyKegiatanData.filter(
+        const allCompletedActivities = allKegiatan.filter(
           (item) => item.status === "Selesai"
         );
 
@@ -189,23 +91,19 @@ export default function PublicKegiatanPage() {
       {/* Daftar Kegiatan */}
       <div className="flex-1 py-10 px-4">
         <div className="max-w-6xl mx-auto">
-          {" "}
-          {/* Lebar lebih besar untuk 3 kolom */}
           <h1 className="text-4xl font-extrabold text-gray-900 text-center mb-10 mt-20">
-            Daftar Kegiatan IKPMJ
+            Daftar Kegiatan
           </h1>
           {kegiatanAktif.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {" "}
-              {/* 3 kolom */}
               {kegiatanAktif.map((item) => (
                 <div
-                  key={item.id}
+                  key={item._id} // Menggunakan _id dari MongoDB
                   className="bg-white rounded-lg shadow-lg overflow-hidden transition-transform duration-300 hover:scale-[1.02] border border-gray-200"
                 >
-                  {item.imageUrl && (
+                  {item.gambar_poster && (
                     <img
-                      src={item.imageUrl}
+                      src={item.gambar_poster} // Menggunakan gambar_poster dari MongoDB
                       alt={item.judul}
                       className="w-full h-48 object-cover"
                       onError={(e) => {
@@ -217,9 +115,9 @@ export default function PublicKegiatanPage() {
                   )}
                   <div className="p-6">
                     <p className="text-sm text-gray-500 mb-2">
-                      {formatDate(item.tanggalMulai)}
-                      {item.tanggalMulai !== item.tanggalSelesai &&
-                        ` - ${formatDate(item.tanggalSelesai)}`}
+                      {formatDate(item.tanggal_mulai)}
+                      {item.tanggal_mulai !== item.tanggal_selesai &&
+                        ` - ${formatDate(item.tanggal_selesai)}`}
                     </p>
                     <h2 className="text-xl font-bold text-gray-800 mb-3">
                       {item.judul}
@@ -228,7 +126,7 @@ export default function PublicKegiatanPage() {
                       {item.deskripsi}
                     </p>
                     <Link
-                      href={`/kegiatan/${item.id}`}
+                      href={`/kegiatan/${item._id}`}
                       className="inline-flex items-center text-blue-600 hover:text-blue-800 font-semibold transition-colors"
                     >
                       Lihat Detail
@@ -265,9 +163,8 @@ export default function PublicKegiatanPage() {
             Jadwal Kegiatan
           </h1>
           <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200">
-            {/* Placeholder untuk Gambar Kalender Kustom */}
             <img
-              src="https://placehold.co/800x500/cccccc/333333?text=Kalender+Kegiatan+IKPMJ"
+              src="https://cms.disway.id/uploads/b408d5f5aa0a279b4eaff61b6d089614.png"
               alt="Kalender Kegiatan"
               className="w-full h-auto object-cover"
             />
@@ -285,12 +182,12 @@ export default function PublicKegiatanPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {kegiatanSelesaiUntukGaleri.map((item) => (
                 <div
-                  key={item.id}
+                  key={item._id} // Menggunakan _id dari MongoDB
                   className="bg-white rounded-lg shadow-lg overflow-hidden transition-transform duration-300 hover:scale-[1.02] border border-gray-200"
                 >
-                  {item.imageUrl && (
+                  {item.gambar_poster && (
                     <img
-                      src={item.imageUrl}
+                      src={item.gambar_poster} // Menggunakan gambar_poster dari MongoDB
                       alt={item.judul}
                       className="w-full h-48 object-cover"
                       onError={(e) => {
@@ -302,13 +199,13 @@ export default function PublicKegiatanPage() {
                   )}
                   <div className="p-6">
                     <p className="text-sm text-gray-500 mb-2">
-                      {formatDate(item.tanggalMulai)}
+                      {formatDate(item.tanggal_mulai)}
                     </p>
                     <h2 className="text-xl font-bold text-gray-800 mb-3">
                       {item.judul}
                     </h2>
                     <Link
-                      href={`/kegiatan/${item.id}`} /* Link ke detail kegiatan */
+                      href={`/kegiatan/${item._id}`} /* Link ke detail kegiatan */
                       className="inline-flex items-center text-blue-600 hover:text-blue-800 font-semibold transition-colors"
                     >
                       Lihat Detail
@@ -341,9 +238,7 @@ export default function PublicKegiatanPage() {
           {hasMoreSelesaiKegiatan && (
             <div className="text-center mt-12">
               <Link
-                href={
-                  "/kegiatan/galeri-kegiatan"
-                } /* Update link ke struktur baru */
+                href={"/kegiatan/galeri-kegiatan"}
                 className="inline-flex items-center px-8 py-3 bg-blue-600 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-300"
               >
                 Lihat Galeri Kegiatan

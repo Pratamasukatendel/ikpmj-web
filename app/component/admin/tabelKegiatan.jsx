@@ -1,42 +1,8 @@
 // app/component/admin/tabelKegiatan.jsx
-"use client"; // Tetap diperlukan untuk interaktivitas di Next.js
+"use client";
 
-import React, { useState, useEffect } from "react"; // Import useEffect
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-
-// Data dummy untuk simulasi fetch dari API
-const dummyApiData = [
-  {
-    id: 1,
-    tanggal: "2025-06-01", // Ubah ke format YYYY-MM-DD untuk konsistensi
-    namaKegiatan: "Kegiatan Mahasiswa Baru",
-    status: "Selesai",
-  },
-  {
-    id: 2,
-    tanggal: "2025-06-01",
-    namaKegiatan: "Kegiatan Sosialisasi Lingkungan",
-    status: "Selesai",
-  },
-  {
-    id: 3,
-    tanggal: "2025-06-10",
-    namaKegiatan: "Workshop Penulisan Ilmiah",
-    status: "Aktif", // Contoh status baru
-  },
-  {
-    id: 4,
-    tanggal: "2025-06-02",
-    namaKegiatan: "Rapat Anggaran Tahunan",
-    status: "Tertunda",
-  },
-  {
-    id: 5,
-    tanggal: "2025-07-05",
-    namaKegiatan: "Bakti Sosial Desa Makmur",
-    status: "Terencana", // Contoh status baru
-  },
-];
 
 // Komponen TabelKegiatan menerima searchTerm dan filterStatus sebagai props
 export default function TabelKegiatan({ searchTerm, filterStatus }) {
@@ -44,59 +10,93 @@ export default function TabelKegiatan({ searchTerm, filterStatus }) {
   const [isLoading, setIsLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState("");
   const [isError, setIsError] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [kegiatanToDelete, setKegiatanToDelete] = useState(null);
 
-  // useEffect untuk simulasi fetch data dari API
-  useEffect(() => {
-    const fetchKegiatanData = async () => {
-      setIsLoading(true);
-      setStatusMessage("");
-      setIsError(false);
-      try {
-        // Simulasi delay fetch data dari API
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        setKegiatan(dummyApiData); // Set data yang di-fetch
-        setStatusMessage("Data kegiatan berhasil dimuat.");
-      } catch (error) {
-        console.error("Error fetching kegiatan:", error);
-        setStatusMessage("Gagal memuat data kegiatan.");
-        setIsError(true);
-      } finally {
-        setIsLoading(false);
+  // Fungsi untuk mengambil data kegiatan dari API
+  const fetchKegiatanData = async () => {
+    setIsLoading(true);
+    setStatusMessage("Sedang memuat data...");
+    setIsError(false);
+    try {
+      const response = await fetch("/api/kegiatan", {
+        cache: "no-store", // Mencegah caching data yang tidak relevan
+      });
+      if (!response.ok) {
+        throw new Error("Gagal mengambil data kegiatan.");
       }
-    };
+      const data = await response.json();
+      setKegiatan(data);
+      setStatusMessage("Data kegiatan berhasil dimuat."); // Menambahkan pesan sukses
+    } catch (error) {
+      console.error("Error fetching kegiatan:", error);
+      setStatusMessage("Gagal memuat data kegiatan.");
+      setIsError(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchKegiatanData();
-  }, []); // [] agar hanya dijalankan sekali saat komponen mount
+  }, []);
 
   // Fungsi untuk memfilter data berdasarkan searchTerm dan filterStatus
   const filteredKegiatan = kegiatan.filter((item) => {
-    // Filter berdasarkan searchTerm (namaKegiatan)
-    const matchesSearch = item.namaKegiatan
+    // Filter berdasarkan searchTerm (judul kegiatan)
+    const matchesSearch = item.judul
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
 
-    // Filter berdasarkan status
+    // Filter berdasarkan status (sesuai dengan opsi di frontend)
     const matchesStatus =
       filterStatus === "all" ||
-      (filterStatus === "inactive" && item.status === "Tidak Aktif"); // Sesuaikan dengan status 'Tidak Aktif' yang sebenarnya
+      item.status.toLowerCase() === filterStatus.toLowerCase();
 
     return matchesSearch && matchesStatus;
   });
 
-  // Fungsi handleHapus
-  const handleHapus = (id) => {
-    // Ganti window.confirm dengan modal kustom di produksi
-    // Untuk demo, kita gunakan pesan status
-    setStatusMessage(`Simulasi: Menghapus kegiatan dengan ID ${id}...`);
-    setIsError(false);
+  // Handler untuk menampilkan modal konfirmasi hapus
+  const confirmHapus = (id) => {
+    setKegiatanToDelete(id);
+    setShowDeleteModal(true);
+  };
 
-    // Simulasi penghapusan data dari API
-    setTimeout(() => {
-      const dataBaru = kegiatan.filter((item) => item.id !== id);
-      setKegiatan(dataBaru);
-      setStatusMessage(`Kegiatan dengan ID ${id} berhasil dihapus (simulasi)!`);
+  // Handler untuk menjalankan penghapusan setelah konfirmasi
+  const executeHapus = async () => {
+    if (!kegiatanToDelete) return;
+
+    setStatusMessage("Sedang menghapus...");
+    setIsError(false);
+    setShowDeleteModal(false);
+
+    try {
+      const response = await fetch(`/api/kegiatan/${kegiatanToDelete}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ _id: kegiatanToDelete }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Gagal menghapus kegiatan.");
+      }
+
+      // Memperbarui state secara optimis tanpa perlu fetch ulang
+      setKegiatan((prevKegiatan) =>
+        prevKegiatan.filter((item) => item._id !== kegiatanToDelete)
+      );
+      setStatusMessage("Kegiatan berhasil dihapus!");
       setIsError(false);
-    }, 500);
+    } catch (error) {
+      console.error("Error saat menghapus kegiatan:", error);
+      setStatusMessage(`Gagal menghapus kegiatan: ${error.message}`);
+      setIsError(true);
+    } finally {
+      setKegiatanToDelete(null);
+    }
   };
 
   // Fungsi untuk mendapatkan kelas badge berdasarkan status
@@ -152,7 +152,7 @@ export default function TabelKegiatan({ searchTerm, filterStatus }) {
               No
             </th>
             <th className="p-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-              Tanggal
+              Tanggal Mulai
             </th>
             <th className="p-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
               Nama Kegiatan
@@ -169,14 +169,14 @@ export default function TabelKegiatan({ searchTerm, filterStatus }) {
           {filteredKegiatan.length > 0 ? (
             filteredKegiatan.map((item, index) => (
               <tr
-                key={item.id}
+                key={item._id}
                 className="hover:bg-gray-50 transition-colors duration-150"
               >
                 <td className="p-4 whitespace-nowrap text-sm">{index + 1}</td>
                 <td className="p-4 whitespace-nowrap text-sm">
-                  {item.tanggal}
+                  {new Date(item.tanggal_mulai).toLocaleDateString("id-ID")}
                 </td>
-                <td className="p-4 text-sm">{item.namaKegiatan}</td>
+                <td className="p-4 text-sm">{item.judul}</td>
                 <td className="p-4 whitespace-nowrap">
                   <span
                     className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(
@@ -187,16 +187,15 @@ export default function TabelKegiatan({ searchTerm, filterStatus }) {
                   </span>
                 </td>
                 <td className="p-4 whitespace-nowrap text-sm">
-                  {/* Tombol aksi dengan styling Tailwind */}
                   <Link
-                    href={`/admin/kegiatan/edit/${item.id}`}
+                    href={`/admin/kegiatan/edit/${item._id}`}
                     className="font-medium text-blue-600 hover:text-blue-800 mr-4 transition-colors"
                   >
                     Edit
                   </Link>
                   <button
-                    onClick={() => handleHapus(item.id)}
-                    className="font-medium text-red-600 hover:text-red-800 transition-colors"
+                    onClick={() => confirmHapus(item._id)}
+                    className="font-medium text-red-600 hover:text-red-800 transition-colors cursor-pointer"
                   >
                     Hapus
                   </button>
@@ -212,6 +211,68 @@ export default function TabelKegiatan({ searchTerm, filterStatus }) {
           )}
         </tbody>
       </table>
+
+      {/* Modal Konfirmasi Hapus - Modern Simple Design */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          {/* Backdrop dengan blur effect */}
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity duration-300"></div>
+
+          {/* Modal container */}
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="relative transform overflow-hidden rounded-xl bg-white shadow-2xl transition-all duration-300 w-full max-w-sm mx-auto">
+              {/* Modal Content */}
+              <div className="px-8 pt-8 pb-6 text-center">
+                {/* Warning Icon */}
+                <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-red-50 mb-6">
+                  <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                    <svg
+                      className="w-6 h-6 text-red-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Title */}
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                  Hapus Kegiatan
+                </h3>
+
+                {/* Description */}
+                <div className="text-gray-500 text-sm leading-relaxed mb-8">
+                  <p>Apakah Anda yakin ingin menghapus kegiatan ini?</p>
+                  <p>Aksi ini tidak dapat dibatalkan.</p>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowDeleteModal(false)}
+                    className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-md font-medium hover:bg-gray-200 transition-colors duration-200"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    onClick={executeHapus}
+                    className="flex-1 px-4 py-3 bg-red-500 text-white rounded-md font-medium hover:bg-red-600 transition-colors duration-200"
+                  >
+                    Hapus
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
