@@ -312,7 +312,7 @@ export default function TambahSuratMasuk() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className={`px-6 py-2 rounded-lg font-semibold shadow-md transition-colors ${
+                    className={`px-6 py-2 rounded-lg font-semibold shadow-md transition-colors text-white ${
                       isSubmitting
                         ? "bg-orange-400 cursor-not-allowed"
                         : "bg-orange-500 hover:bg-orange-600"

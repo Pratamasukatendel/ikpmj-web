@@ -1,54 +1,32 @@
 // app/component/admin/tabelKegiatan.jsx
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 
 // Komponen TabelKegiatan menerima searchTerm dan filterStatus sebagai props
-export default function TabelKegiatan({ searchTerm, filterStatus }) {
-  const [kegiatan, setKegiatan] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [statusMessage, setStatusMessage] = useState("");
-  const [isError, setIsError] = useState(false);
+export default function TabelKegiatan({
+  kegiatan = [],
+  searchTerm,
+  filterStatus,
+  isLoading,
+  isError,
+  statusMessage,
+  executeHapus,
+}) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [kegiatanToDelete, setKegiatanToDelete] = useState(null);
 
-  // Fungsi untuk mengambil data kegiatan dari API
-  const fetchKegiatanData = async () => {
-    setIsLoading(true);
-    setStatusMessage("Sedang memuat data...");
-    setIsError(false);
-    try {
-      const response = await fetch("/api/kegiatan", {
-        cache: "no-store", // Mencegah caching data yang tidak relevan
-      });
-      if (!response.ok) {
-        throw new Error("Gagal mengambil data kegiatan.");
-      }
-      const data = await response.json();
-      setKegiatan(data);
-      setStatusMessage("Data kegiatan berhasil dimuat."); // Menambahkan pesan sukses
-    } catch (error) {
-      console.error("Error fetching kegiatan:", error);
-      setStatusMessage("Gagal memuat data kegiatan.");
-      setIsError(true);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchKegiatanData();
-  }, []);
+  // State untuk paginasi
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   // Fungsi untuk memfilter data berdasarkan searchTerm dan filterStatus
   const filteredKegiatan = kegiatan.filter((item) => {
-    // Filter berdasarkan searchTerm (judul kegiatan)
     const matchesSearch = item.judul
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
 
-    // Filter berdasarkan status (sesuai dengan opsi di frontend)
     const matchesStatus =
       filterStatus === "all" ||
       item.status.toLowerCase() === filterStatus.toLowerCase();
@@ -56,47 +34,21 @@ export default function TabelKegiatan({ searchTerm, filterStatus }) {
     return matchesSearch && matchesStatus;
   });
 
+  // Logika untuk paginasi
+  const totalPages = Math.ceil(filteredKegiatan.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredKegiatan.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
+
+  const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
+
   // Handler untuk menampilkan modal konfirmasi hapus
   const confirmHapus = (id) => {
     setKegiatanToDelete(id);
     setShowDeleteModal(true);
-  };
-
-  // Handler untuk menjalankan penghapusan setelah konfirmasi
-  const executeHapus = async () => {
-    if (!kegiatanToDelete) return;
-
-    setStatusMessage("Sedang menghapus...");
-    setIsError(false);
-    setShowDeleteModal(false);
-
-    try {
-      const response = await fetch(`/api/kegiatan/${kegiatanToDelete}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ _id: kegiatanToDelete }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Gagal menghapus kegiatan.");
-      }
-
-      // Memperbarui state secara optimis tanpa perlu fetch ulang
-      setKegiatan((prevKegiatan) =>
-        prevKegiatan.filter((item) => item._id !== kegiatanToDelete)
-      );
-      setStatusMessage("Kegiatan berhasil dihapus!");
-      setIsError(false);
-    } catch (error) {
-      console.error("Error saat menghapus kegiatan:", error);
-      setStatusMessage(`Gagal menghapus kegiatan: ${error.message}`);
-      setIsError(true);
-    } finally {
-      setKegiatanToDelete(null);
-    }
   };
 
   // Fungsi untuk mendapatkan kelas badge berdasarkan status
@@ -166,13 +118,15 @@ export default function TabelKegiatan({ searchTerm, filterStatus }) {
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-200 text-gray-700">
-          {filteredKegiatan.length > 0 ? (
-            filteredKegiatan.map((item, index) => (
+          {currentItems.length > 0 ? (
+            currentItems.map((item, index) => (
               <tr
                 key={item._id}
                 className="hover:bg-gray-50 transition-colors duration-150"
               >
-                <td className="p-4 whitespace-nowrap text-sm">{index + 1}</td>
+                <td className="p-4 whitespace-nowrap text-sm">
+                  {indexOfFirstItem + index + 1}
+                </td>
                 <td className="p-4 whitespace-nowrap text-sm">
                   {new Date(item.tanggal_mulai).toLocaleDateString("id-ID")}
                 </td>
@@ -211,6 +165,41 @@ export default function TabelKegiatan({ searchTerm, filterStatus }) {
           )}
         </tbody>
       </table>
+
+      {/* Paginasi */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-2 p-4 border-t border-gray-200 bg-gray-50">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Sebelumnya
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+            (pageNumber) => (
+              <button
+                key={pageNumber}
+                onClick={() => handlePageChange(pageNumber)}
+                className={`px-4 py-2 rounded-md ${
+                  currentPage === pageNumber
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                {pageNumber}
+              </button>
+            )
+          )}
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Selanjutnya
+          </button>
+        </div>
+      )}
 
       {/* Modal Konfirmasi Hapus - Modern Simple Design */}
       {showDeleteModal && (
@@ -262,7 +251,7 @@ export default function TabelKegiatan({ searchTerm, filterStatus }) {
                     Batal
                   </button>
                   <button
-                    onClick={executeHapus}
+                    onClick={() => executeHapus(kegiatanToDelete)}
                     className="flex-1 px-4 py-3 bg-red-500 text-white rounded-md font-medium hover:bg-red-600 transition-colors duration-200"
                   >
                     Hapus
