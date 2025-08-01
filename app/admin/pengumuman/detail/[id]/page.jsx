@@ -2,14 +2,13 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Sidebar from "@/app/component/admin/sidebar";
 import Navbar from "@/app/component/admin/navbar";
 import Link from "next/link";
 
 export default function DetailPengumuman() {
   const { id } = useParams(); // Mengambil ID pengumuman dari URL
-  const router = useRouter();
 
   const [pengumumanData, setPengumumanData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -17,47 +16,35 @@ export default function DetailPengumuman() {
   const [statusMessage, setStatusMessage] = useState("");
 
   useEffect(() => {
+    if (!id) return;
+
     const fetchData = async () => {
       setIsLoading(true);
       setStatusMessage("");
       setIsError(false);
 
       try {
-        // --- Ganti dengan fetch nyata data pengumuman berdasarkan ID dari API/database Anda ---
-        // Contoh:
-        // const response = await fetch(`/api/pengumuman/${id}`);
-        // if (!response.ok) {
-        //   throw new Error('Gagal mengambil data pengumuman.');
-        // }
-        // const data = await response.json();
-        // setPengumumanData(data);
-
-        // Simulasi fetch data dengan delay
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        const fakeData = {
-          id: id,
-          judul: `Pengumuman Detail ID ${id}: Rapat Anggota`,
-          isi: `Ini adalah isi lengkap dari pengumuman dengan ID ${id}. Diberitahukan kepada seluruh anggota IKPMJ bahwa rapat anggota bulanan akan diadakan pada hari Minggu, 25 Juli 2025, pukul 10.00 WIB di Aula Serbaguna. Agenda rapat meliputi evaluasi program kerja dan perencanaan kegiatan mendatang. Diharapkan kehadiran seluruh anggota.`,
-          tanggal_publikasi: "2025-07-10",
-          tanggal_berakhir: "2025-07-24",
-          status: "Aktif",
-          penulis: "Sekretaris IKPMJ",
-          lampiran_url: `https://www.africau.edu/images/default/sample.pdf?id=${id}`, // Contoh URL lampiran
-        };
-        setPengumumanData(fakeData);
-        setStatusMessage("Data pengumuman berhasil dimuat.");
+        // Mengambil data nyata dari API
+        const response = await fetch(`/api/pengumuman/${id}`);
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.message || "Gagal mengambil data pengumuman."
+          );
+        }
+        const data = await response.json();
+        setPengumumanData(data.pengumuman); // Menggunakan data dari API
+        setStatusMessage("Data pengumuman berhasil dimuat."); // Pesan sukses
       } catch (error) {
         console.error("Error fetching data:", error);
-        setStatusMessage(`Gagal memuat data pengumuman: ${error.message}`);
+        setStatusMessage(error.message);
         setIsError(true);
       } finally {
         setIsLoading(false);
       }
     };
 
-    if (id) {
-      fetchData();
-    }
+    fetchData();
   }, [id]);
 
   // Fungsi untuk mendapatkan kelas badge berdasarkan status
@@ -74,11 +61,11 @@ export default function DetailPengumuman() {
     }
   };
 
-  // Fungsi untuk format tanggal (DD/MM/YYYY)
+  // Fungsi untuk format tanggal (DD MMMM YYYY)
   const formatDate = (dateString) => {
-    if (!dateString) return "";
-    const [year, month, day] = dateString.split("-");
-    return `${day}/${month}/${year}`;
+    if (!dateString) return "Tidak Ditentukan";
+    const options = { year: "numeric", month: "long", day: "numeric" };
+    return new Date(dateString).toLocaleDateString("id-ID", options);
   };
 
   if (isLoading) {
@@ -101,9 +88,13 @@ export default function DetailPengumuman() {
         <Sidebar />
         <div className="flex-1 flex flex-col items-center justify-center">
           <Navbar />
-          <div className="text-xl text-red-600">
-            {statusMessage ||
-              "Data pengumuman tidak ditemukan atau terjadi kesalahan."}
+          <div className="text-center p-4">
+            <p className="text-xl text-red-600">
+              {statusMessage || "Data pengumuman tidak ditemukan atau terjadi kesalahan."}
+            </p>
+             <Link href="/admin/pengumuman" className="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                Kembali ke Daftar
+            </Link>
           </div>
         </div>
       </div>
@@ -118,17 +109,13 @@ export default function DetailPengumuman() {
         <div className="p-7 flex-1 flex flex-col items-center justify-center">
           <div className="w-full max-w-3xl">
             <h1 className="text-3xl font-bold text-gray-800 text-center mb-8">
-              Detail Pengumuman <span className="text-teal-600">ID: {id}</span>
+              Detail Pengumuman : <span className="text-teal-600">{pengumumanData.judul}</span>
             </h1>
             <div className="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
               {/* Pesan Status */}
-              {statusMessage && (
+              {statusMessage && !isError && (
                 <div
-                  className={`p-3 rounded-md text-sm mb-4 ${
-                    isError
-                      ? "bg-red-100 text-red-700"
-                      : "bg-green-100 text-green-700"
-                  }`}
+                  className={`p-3 rounded-md text-sm mb-4 bg-green-100 text-green-700`}
                 >
                   {statusMessage}
                 </div>
@@ -189,43 +176,43 @@ export default function DetailPengumuman() {
                   <p className="text-base">{pengumumanData.penulis}</p>
                 </div>
 
-                <div className="col-span-full border-b pb-3 mb-3 pt-4">
-                  <h2 className="text-2xl font-semibold text-gray-800">
-                    Lampiran
-                  </h2>
-                </div>
-                <div className="col-span-full">
-                  {pengumumanData.lampiran_url ? (
-                    <a
-                      href={pengumumanData.lampiran_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-md"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="w-5 h-5 mr-2"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
-                        />
-                      </svg>
-                      Unduh Lampiran
-                    </a>
-                  ) : (
-                    <p className="text-gray-500">Tidak ada lampiran.</p>
-                  )}
-                </div>
+                {pengumumanData.lampiran_url && (
+                    <>
+                        <div className="col-span-full border-b pb-3 mb-3 pt-4">
+                            <h2 className="text-2xl font-semibold text-gray-800">
+                                Lampiran
+                            </h2>
+                        </div>
+                        <div className="col-span-full">
+                            <a
+                                href={pengumumanData.lampiran_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-md"
+                            >
+                                <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                                stroke="currentColor"
+                                className="w-5 h-5 mr-2"
+                                >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
+                                />
+                                </svg>
+                                Unduh Lampiran
+                            </a>
+                        </div>
+                    </>
+                )}
               </div>
 
               {/* Tombol Aksi */}
-              <div className="flex justify-end gap-4 pt-8">
+              <div className="flex justify-end gap-4 pt-8 mt-6 border-t">
                 <Link
                   href={`/admin/pengumuman/edit/${id}`}
                   className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 transition-colors font-semibold shadow-md"
