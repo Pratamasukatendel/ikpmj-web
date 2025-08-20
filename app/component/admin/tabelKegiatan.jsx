@@ -12,6 +12,7 @@ export default function TabelKegiatan({
   isLoading,
   isError,
   statusMessage,
+  // executeHapus sekarang juga menerima sebuah callback untuk menutup modal
   executeHapus,
 }) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -49,6 +50,12 @@ export default function TabelKegiatan({
   const confirmHapus = (id) => {
     setKegiatanToDelete(id);
     setShowDeleteModal(true);
+  };
+
+  // Handler baru untuk eksekusi hapus yang juga menutup modal
+  const handleExecuteHapus = () => {
+    executeHapus(kegiatanToDelete);
+    setShowDeleteModal(false); // <--- Tambahkan baris ini
   };
 
   // Fungsi untuk mendapatkan kelas badge berdasarkan status
@@ -251,7 +258,7 @@ export default function TabelKegiatan({
                     Batal
                   </button>
                   <button
-                    onClick={() => executeHapus(kegiatanToDelete)}
+                    onClick={handleExecuteHapus} // <--- Ganti dengan handler baru
                     className="flex-1 px-4 py-3 bg-red-500 text-white rounded-md font-medium hover:bg-red-600 transition-colors duration-200"
                   >
                     Hapus

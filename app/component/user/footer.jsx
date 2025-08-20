@@ -78,16 +78,33 @@ export default function Footer() {
               className="text-gray-400 hover:text-white transition-colors"
             >
               <svg
-                className="w-6 h-6"
-                fill="currentColor"
+                width="24px"
+                height="24px"
+                stroke-width="1.5"
                 viewBox="0 0 24 24"
-                aria-hidden="true"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                color="#e6e6e6"
               >
                 <path
-                  fillRule="evenodd"
-                  d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm3.1 4.5c.828 0 1.5.672 1.5 1.5s-.672 1.5-1.5 1.5-1.5-.672-1.5-1.5.672-1.5 1.5-1.5zm-1.5 3.5c-2.761 0-5 2.239-5 5s2.239 5 5 5 5-2.239 5-5-2.239-5-5-5zm0 8c-1.657 0-3-1.343-3-3s1.343-3 3-3 3 1.343 3 3-1.343 3-3 3z"
-                  clipRule="evenodd"
-                />
+                  d="M12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16Z"
+                  stroke="#e6e6e6"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></path>
+                <path
+                  d="M3 16V8C3 5.23858 5.23858 3 8 3H16C18.7614 3 21 5.23858 21 8V16C21 18.7614 18.7614 21 16 21H8C5.23858 21 3 18.7614 3 16Z"
+                  stroke="#e6e6e6"
+                  stroke-width="1.5"
+                ></path>
+                <path
+                  d="M17.5 6.51L17.51 6.49889"
+                  stroke="#e6e6e6"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></path>
               </svg>
             </a>
             {/* TikTok Icon (Generic SVG) - Using a simple play button as placeholder */}
@@ -98,28 +115,28 @@ export default function Footer() {
               className="text-gray-400 hover:text-white transition-colors"
             >
               <svg
-                className="w-6 h-6"
-                fill="currentColor"
+                width="24px"
+                height="24px"
+                stroke-width="1.5"
                 viewBox="0 0 24 24"
-                aria-hidden="true"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                color="#e6e6e6"
               >
-                <path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" />
-              </svg>
-            </a>
-            {/* X (Twitter) Icon (Generic SVG) */}
-            <a
-              href="https://twitter.com/ikpmj_jogja"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              <svg
-                className="w-6 h-6"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path d="M18.9 3.3c-.7.3-1.4.5-2.2.6.8-.5 1.4-1.2 1.7-2.1-.8.5-1.7.9-2.6 1.1-.7-.7-1.7-1.2-2.8-1.2-2.1 0-3.8 1.7-3.8 3.8 0 .3.03.6.1.9-3.2-.2-6-1.7-7.9-4.1-.3.5-.5 1.1-.5 1.8 0 1.3.7 2.4 1.7 3.1-.6 0-1.2-.2-1.7-.5v.05c0 1.8 1.3 3.3 3 3.6-.3.08-.6.12-.9.12-.2 0-.4-.02-.6-.06.5 1.5 1.9 2.6 3.5 2.6-1.3 1-3 1.6-4.8 1.6-.3 0-.6 0-.9-.05 1.7 1.1 3.7 1.7 5.9 1.7 7.1 0 11-5.9 11-11.8 0-.2 0-.3-.02-.5.8-.6 1.5-1.4 2-2.3z" />
+                <path
+                  d="M21 8V16C21 18.7614 18.7614 21 16 21H8C5.23858 21 3 18.7614 3 16V8C3 5.23858 5.23858 3 8 3H16C18.7614 3 21 5.23858 21 8Z"
+                  stroke="#e6e6e6"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></path>
+                <path
+                  d="M10 12C8.34315 12 7 13.3431 7 15C7 16.6569 8.34315 18 10 18C11.6569 18 13 16.6569 13 15V6C13.3333 7 14.6 9 17 9"
+                  stroke="#e6e6e6"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></path>
               </svg>
             </a>
             {/* YouTube Icon (Generic SVG) */}
@@ -130,12 +147,27 @@ export default function Footer() {
               className="text-gray-400 hover:text-white transition-colors"
             >
               <svg
-                className="w-6 h-6"
-                fill="currentColor"
+                width="24px"
+                height="24px"
+                stroke-width="1.5"
                 viewBox="0 0 24 24"
-                aria-hidden="true"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                color="#e6e6e6"
               >
-                <path d="M19.615 3.184c-1.076-.246-2.899-.794-4.664-.997C13.91 1.93 12 2 12 2s-1.91.07-2.951.187c-1.765.203-3.588.751-4.664.997C3.07 3.43 2 4.417 2 6v12c0 1.583 1.07 2.57 2.385 2.816 1.076.246 2.899.794 4.664.997C10.09 22.07 12 22 12 22s1.91-.07 2.951-.187c1.765-.203 3.588-.751 4.664-.997C20.93 20.57 22 19.583 22 18V6c0-1.583-1.07-2.57-2.385-2.816zM9.75 16.5v-9L16.5 12l-6.75 4.5z" />
+                <path
+                  d="M14 12L10.5 14V10L14 12Z"
+                  fill="#e6e6e6"
+                  stroke="#e6e6e6"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></path>
+                <path
+                  d="M2 12.7075V11.2924C2 8.39705 2 6.94939 2.90549 6.01792C3.81099 5.08645 5.23656 5.04613 8.08769 4.96549C9.43873 4.92728 10.8188 4.8999 12 4.8999C13.1812 4.8999 14.5613 4.92728 15.9123 4.96549C18.7634 5.04613 20.189 5.08645 21.0945 6.01792C22 6.94939 22 8.39705 22 11.2924V12.7075C22 15.6028 22 17.0505 21.0945 17.9819C20.189 18.9134 18.7635 18.9537 15.9124 19.0344C14.5613 19.0726 13.1812 19.1 12 19.1C10.8188 19.1 9.43867 19.0726 8.0876 19.0344C5.23651 18.9537 3.81097 18.9134 2.90548 17.9819C2 17.0505 2 15.6028 2 12.7075Z"
+                  stroke="#e6e6e6"
+                  stroke-width="1.5"
+                ></path>
               </svg>
             </a>
             {/* Facebook Icon (Generic SVG) */}
@@ -146,12 +178,35 @@ export default function Footer() {
               className="text-gray-400 hover:text-white transition-colors"
             >
               <svg
-                className="w-6 h-6"
-                fill="currentColor"
+                width="24px"
+                height="24px"
+                stroke-width="1.5"
                 viewBox="0 0 24 24"
-                aria-hidden="true"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                color="#e6e6e6"
               >
-                <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.776-3.89 1.094 0 2.24.195 2.24.195v2.46h-1.262c-1.247 0-1.637.775-1.637 1.562V12h2.773l-.443 2.89h-2.33V22C18.343 21.128 22 16.991 22 12z" />
+                <path
+                  d="M21 8V16C21 18.7614 18.7614 21 16 21H8C5.23858 21 3 18.7614 3 16V8C3 5.23858 5.23858 3 8 3H16C18.7614 3 21 5.23858 21 8Z"
+                  stroke="#e6e6e6"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></path>
+                <path
+                  d="M11 21C11 18 11 15 11 12C11 9.8125 11.5 8 15 8"
+                  stroke="#e6e6e6"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></path>
+                <path
+                  d="M9 13H11H15"
+                  stroke="#e6e6e6"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></path>
               </svg>
             </a>
           </div>

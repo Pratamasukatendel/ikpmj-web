@@ -33,16 +33,15 @@ export default function TentangKami() {
             <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6">
               Sejarah Organisasi
             </h1>
-            <p className="text-lg text-gray-600 leading-relaxed">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam eu
-              turpis molestie, dictum est a, mattis tellus. Sed dignissim, metus
-              nec fringilla accumsan, risus sem sollicitudin lacus, ut interdum
-              tellus elit sed risus. Maecenas eget condimentum velit, sit amet
-              feugiat lectus. Class aptent taciti sociosqu ad litora torquent
-              per conubia nostra, per inceptos himenaeos. Praesent auctor purus
-              luctus enim egestas, ac scelerisque ante pulvinar. Lorem ipsum
-              dolor sit amet, consectetur adipiscing elit. Etiam eu turpis
-              molestie, dictum est a, mattis tellus.
+            <p className="text-lg text-gray-600 leading-relaxed text-justify">
+              Sekitar 47 tahun silam tepatnya 15 Juni 1968 di Jogja ini lahirlah
+              sebuah organisasi kekeluargaan yang didasarkan pada kesamaan
+              daerah asal yakni Ikatan Keluarga Pelajar dan Mahasiswa Jember di
+              Yogyakarta atau disingkat IKPMJ. Jika ditilik dari namanya
+              organisasi ini terdiri atas keluarga, pelajar sekaligus mahasiswa
+              yang semuanya berasal dari Jember dan berada di Yogyakarta. Jadi
+              kata keluarga bukan merupakan kata sifat yang merujuk pada
+              kekeluargaan, melainkan menjadi obyek tersendiri.
             </p>
           </div>
         </div>
@@ -93,43 +92,12 @@ export default function TentangKami() {
           </h1>
           <div className="w-full flex justify-center">
             <Image
-              src="/images/organisasi.png"
+              src="/images/struktur-organisasi.png"
               alt="Struktur Organisasi IKPMJ"
               width={1000} // Pertahankan ukuran besar jika gambar detail
               height={600} // Sesuaikan tinggi sesuai proporsi gambar Anda
-              className="w-full h-auto object-contain rounded-lg shadow-lg border border-gray-200"
+              className="w-full h-auto object-contain rounded-lg"
             />
-          </div>
-        </div>
-      </div>
-
-      {/* Section Kontak Pengurus */}
-      <div className="py-20 px-4 bg-gray-50">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-10">
-            Kontak Pengurus
-          </h1>
-          <p className="text-lg text-gray-600 mb-6">
-            Untuk informasi lebih lanjut atau pertanyaan, silakan hubungi
-            pengurus IKPMJ melalui kontak berikut:
-          </p>
-          <div className="flex flex-col md:flex-row justify-center items-center gap-6">
-            <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200 text-center">
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                Sekretaris Umum
-              </h3>
-              <p className="text-gray-700">Nama Sekretaris</p>
-              <p className="text-gray-700">Email: sekretaris@ikpmj.org</p>
-              <p className="text-gray-700">Telp: +62 812-3456-7890</p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200 text-center">
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                Humas
-              </h3>
-              <p className="text-gray-700">Nama Humas</p>
-              <p className="text-gray-700">Email: humas@ikpmj.org</p>
-              <p className="text-gray-700">Telp: +62 876-5432-1098</p>
-            </div>
           </div>
         </div>
       </div>

@@ -7,35 +7,27 @@ const faqs = [
   {
     question: "Apa itu IKPMJ?",
     answer:
-      "Resikel adalah aplikasi yang membantu kamu mengelola sampah dengan cara yang lebih baik dan ramah lingkungan. Dengan Resikel, kamu bisa memilah sampah lebih mudah dan mendapatkan informasi penting tentang pengelolaan limbah.",
+      "Ikatan Keluarga Pelajar dan Mahasiswa Jember (IKPMJ) adalah organisasi mahasiswa daerah yang berdedikasi untuk memfasilitasi dan mendukung mahasiswa-mahasiswa asal Jember yang sedang menempuh pendidikan di Yogyakarta.",
   },
   {
     question: "Kenapa Harus IKPMJ?",
     answer:
-      "Sampah adalah barang-barang yang tidak terpakai lagi, seperti sisa makanan, kemasan, dan barang-barang yang sudah tidak digunakan. Pengelolaan sampah yang baik sangat penting untuk kesehatan dan kebersihan lingkungan.",
+      "Karena IKPMJ berkomitmen untuk mempererat tali silaturahmi, memberikan dukungan akademik, serta menyelenggarakan berbagai kegiatan sosial dan pengembangan diri untuk semua anggota organisasi.",
   },
   {
     question: "Bagaimana cara Bergabung Ke dalam IKPMJ?",
-    answer: {
-      "Sampah Organik": [
-        "Sisa makanan, kulit buah, dan sayuran.",
-        "Daun dan ranting.",
-      ],
-      "Sampah Anorganik": ["Plastik, kertas, dan logam."],
-      "Sampah Berbahaya": ["Limbah medis dan baterai."],
-      "Sampah Elektronik": ["Perangkat elektronik yang tidak terpakai."],
-      "Sampah Sisa Konstruksi": ["Material seperti kayu dan beton."],
-    },
+    answer:
+      "Dengan cara menghubungi kontak pengurus atau mengirim email ke email organisasi",
   },
   {
-    question: "Apa itu pengolahan sampah?",
+    question: "Siapa yang bisa bergabung dengan IKPMJ?",
     answer:
-      "Pengolahan sampah meliputi pengumpulan, pemilahan, dan daur ulang untuk mengurangi dampak negatifnya terhadap lingkungan. Proses ini penting agar sampah yang bisa didaur ulang tidak menjadi limbah yang mencemari lingkungan.",
+      "Mahasiswa aktif yang berasal dari Jember dan sedang berkuliah di Yogyakarta",
   },
   {
-    question: "Bagaimana cara menggunakan Resikel?",
+    question: "Bagaimana cara saya tahu ada kegiatan baru?",
     answer:
-      "Kamu bisa mengunjungi situs web Resikel dan membuat akun untuk mendapatkan akses penuh. Di sana, kamu akan menemukan panduan tentang cara mengelola sampah dan lokasi tempat pembuangan sampah terdekat.",
+      "Kamu bisa mengikuti media sosial resmi atau memeriksa halaman Pengumuman dan Kegiatan di website ini.",
   },
 ];
 
@@ -47,7 +39,7 @@ export default function FAQ() {
   };
 
   return (
-    <section className="text-center py-20 px-8 lg:px-24">
+    <section className="text-center py-10 px-8 lg:px-24">
       <h2 className="text-3xl font-bold text-gray-800 mb-10">
         Frequently Asked Questions
       </h2>
