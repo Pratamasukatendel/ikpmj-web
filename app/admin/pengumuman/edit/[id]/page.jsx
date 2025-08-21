@@ -1,4 +1,3 @@
-// File: app/admin/pengumuman/edit/[id]/page.jsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -11,7 +10,6 @@ export default function EditPengumuman() {
   const { id } = useParams(); // Mengambil ID dari URL
   const router = useRouter(); // Untuk redirect setelah update
 
-  // State untuk menyimpan nilai input form, digabung dari logika Anda
   const [formData, setFormData] = useState({
     judul: "",
     isi: "",
@@ -23,44 +21,45 @@ export default function EditPengumuman() {
     currentLampiranUrl: "", // Untuk URL lampiran yang sudah ada
   });
 
-  // State untuk loading dan pesan status
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [isError, setIsError] = useState(false);
 
-  // useEffect untuk mengambil data pengumuman dari API kita
   useEffect(() => {
     if (!id) return;
 
     const fetchPengumumanById = async () => {
       setIsLoading(true);
-      setStatusMessage("");
-      setIsError(false);
       try {
         const res = await fetch(`/api/pengumuman/${id}`);
         if (!res.ok) {
-          throw new Error("Gagal mengambil data pengumuman dari server.");
+          throw new Error("Gagal mengambil data pengumuman.");
         }
         const data = await res.json();
-        const pengumuman = data.pengumuman;
-
-        // Fungsi untuk memformat tanggal ke YYYY-MM-DD untuk input
+        
+        // PERBAIKAN: API Anda kemungkinan besar mengembalikan objek yang berisi objek 'pengumuman'.
+        // Kita perlu mengakses data dari `data.pengumuman`.
+        const pengumumanData = data.pengumuman;
+        if (!pengumumanData) {
+          throw new Error("Struktur data dari API tidak valid.");
+        }
+        
         const formatDateForInput = (date) => {
           if (!date) return "";
           return new Date(date).toISOString().split("T")[0];
         };
 
-        // Mengisi state form dengan data dari API
+        // Mengisi form dengan data dari `pengumumanData`
         setFormData({
-          judul: pengumuman.judul,
-          isi: pengumuman.isi,
-          tanggal_publikasi: formatDateForInput(pengumuman.tanggal_publikasi),
-          tanggal_berakhir: formatDateForInput(pengumuman.tanggal_berakhir),
-          status: pengumuman.status,
-          penulis: pengumuman.penulis,
-          lampiran: null, // Input file selalu kosong di awal
-          currentLampiranUrl: pengumuman.lampiran_url || "", // Simpan URL yang ada
+          judul: pengumumanData.judul || "",
+          isi: pengumumanData.isi || "",
+          tanggal_publikasi: formatDateForInput(pengumumanData.tanggal_publikasi),
+          tanggal_berakhir: formatDateForInput(pengumumanData.tanggal_berakhir),
+          status: pengumumanData.status || "Draft",
+          penulis: pengumumanData.penulis || "",
+          lampiran: null,
+          currentLampiranUrl: pengumumanData.lampiran_url || "",
         });
       } catch (error) {
         console.error(error);
@@ -74,18 +73,15 @@ export default function EditPengumuman() {
     fetchPengumumanById();
   }, [id]);
 
-  // Handler untuk perubahan input teks dan select
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handler khusus untuk input file
   const handleFileChange = (e) => {
     setFormData((prev) => ({ ...prev, lampiran: e.target.files[0] }));
   };
 
-  // Handler untuk submit form (update)
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -95,16 +91,15 @@ export default function EditPengumuman() {
     try {
       let finalLampiranUrl = formData.currentLampiranUrl;
 
-      // ======================================================================
-      // === MULAI LOGIKA UPLOAD DARI KODE 1 ===
-      // Jika ada file baru yang diupload, proses upload terlebih dahulu
+      // --- LOGIKA UPLOAD ---
+      // Jika ada file baru yang dipilih, unggah terlebih dahulu.
       if (formData.lampiran) {
         setStatusMessage("Mengunggah lampiran baru...");
         const uploadData = new FormData();
-        // API Anda dari Kode 1 mengharapkan nama field 'profileImage'
-        uploadData.append("profileImage", formData.lampiran);
+        
+        uploadData.append("file", formData.lampiran);
 
-        const uploadResponse = await fetch("/api/upload", {
+        const uploadResponse = await fetch("/api/upload?folder=pengumuman", {
           method: "POST",
           body: uploadData,
         });
@@ -115,13 +110,10 @@ export default function EditPengumuman() {
           throw new Error(result.message || "Gagal mengunggah lampiran baru.");
         }
 
-        finalLampiranUrl = result.url; // Dapatkan URL baru
+        finalLampiranUrl = result.url; // Dapatkan URL baru dari Cloudinary.
         setStatusMessage("Lampiran berhasil diperbarui.");
       }
-      // === SELESAI LOGIKA UPLOAD DARI KODE 1 ===
-      // ======================================================================
-
-      // Siapkan payload untuk dikirim ke API
+      
       const payload = {
         judul: formData.judul,
         isi: formData.isi,
@@ -129,10 +121,9 @@ export default function EditPengumuman() {
         tanggal_berakhir: formData.tanggal_berakhir || null,
         status: formData.status,
         penulis: formData.penulis,
-        lampiran_url: finalLampiranUrl, // Gunakan URL yang baru atau yang lama
+        lampiran_url: finalLampiranUrl,
       };
 
-      // Kirim data update ke API route kita
       const res = await fetch(`/api/pengumuman/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -167,7 +158,6 @@ export default function EditPengumuman() {
     );
   }
   
-  // Fungsi untuk memeriksa apakah URL adalah gambar (diambil dari Kode 1)
   const isImageUrl = (url) => {
     if (!url) return false;
     return /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
@@ -232,10 +222,10 @@ export default function EditPengumuman() {
                       <div className="mt-4">
                         <p className="text-sm text-gray-600 mb-2">Lampiran saat ini:</p>
                         {isImageUrl(formData.currentLampiranUrl) ? (
-                          <img src={formData.currentLampiranUrl} alt="Lampiran saat ini" className="w-32 h-32 object-cover rounded-md border"/>
+                          <img src={formData.currentLampiranUrl} alt="Lampiran saat ini" className="w-32 h-auto object-cover rounded-md border"/>
                         ) : (
                           <a href={formData.currentLampiranUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                            Lihat Lampiran (Non-gambar)
+                            Lihat Lampiran
                           </a>
                         )}
                       </div>

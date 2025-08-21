@@ -14,9 +14,11 @@ export default function RegisterForm() {
 
   const router = useRouter();
 
+  //fungsi ini dijalankan ketika signup dijalankan
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // memvalidasi sisi frontend
     if (!name || !email || !password) {
       setError("Semua tabel harus di isi!");
       return;
@@ -24,21 +26,25 @@ export default function RegisterForm() {
 
     try {
 
+      // meminta ke API backend mengecek email apakah sudah di isi!
       const resUserExists = await fetch("/api/userExists", {
-        method: "POST",
+        method: "POST", // metode POST untuk mengirim data di body
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json", //memberi tahu server bahwa data yang dikirim berformat JSON
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email }),  // mengubah object JavaScript pada "email" menjadi string JSON setelah itu langsung mengirimkannya
       });
 
-      const { user } = await resUserExists.json();
+      //Mengubah respons dari server menjadi Javascript
+      const { user } = await resUserExists.json(); 
 
+      //Memeriksa hasil backend
       if (user) {
-        setError("Pengguna sudah tersedia!");
+        setError("Pengguna sudah tersedia!"); 
         return;
       }
 
+      //Jika pengguna belum ada, lanjut ke proses pendaftaran
       const res = await fetch('/api/register', {
         method: "POST",
         headers: {
@@ -49,6 +55,7 @@ export default function RegisterForm() {
         })
       })
 
+      // Memeriksa apakah pendaftaran di backend berhasil
       if (res.ok) {
         const form = e.target;
         form.reset();

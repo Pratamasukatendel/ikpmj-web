@@ -1,4 +1,3 @@
-// app/admin/pengumuman/tambah/page.jsx
 "use client";
 
 import React, { useState } from "react";
@@ -51,16 +50,23 @@ export default function TambahPengumuman() {
       if (formData.lampiran) {
         setStatusMessage("Mengunggah lampiran...");
         const uploadData = new FormData();
-        // Menggunakan 'profileImage' agar cocok dengan API upload Anda
-        uploadData.append("profileImage", formData.lampiran);
+        
+        // PERBAIKAN 1: Menggunakan kunci 'file' agar cocok dengan API route.
+        // Backend Anda mengharapkan `formData.get("file")`.
+        uploadData.append("file", formData.lampiran);
 
-        const uploadResponse = await fetch('/api/upload', {
+        // PERBAIKAN 2: Menambahkan parameter query `folder` pada URL fetch.
+        // Backend Anda mengharapkan `request.nextUrl.searchParams.get("folder")`.
+        const uploadResponse = await fetch('/api/upload?folder=pengumuman', {
           method: 'POST',
           body: uploadData,
+          // Headers 'Content-Type' tidak perlu di-set manual saat mengirim FormData,
+          // browser akan menanganinya secara otomatis.
         });
 
         if (!uploadResponse.ok) {
           const errorResult = await uploadResponse.json();
+          // Error "File gambar tidak ditemukan" akan ditangkap di sini.
           throw new Error(errorResult.message || 'Gagal mengunggah lampiran.');
         }
 
@@ -234,7 +240,7 @@ export default function TambahPengumuman() {
                     type="file"
                     id="lampiran"
                     name="lampiran"
-                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                    accept=".jpg,.jpeg,.png"
                     onChange={handleFileChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-md file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                   />
