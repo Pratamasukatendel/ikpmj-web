@@ -89,7 +89,7 @@ export default function PublicKegiatanPage() {
     <div className="flex flex-col min-h-screen bg-gray-100">
       <Navbar /> {/* Navbar dari folder user */}
       {/* Daftar Kegiatan */}
-      <div className="flex-1 py-10 px-4">
+      <div className="flex-1 py-10 px-4 bg-white">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-4xl font-extrabold text-gray-900 text-center mb-10 mt-20">
             Daftar Kegiatan
@@ -154,21 +154,6 @@ export default function PublicKegiatanPage() {
               Belum ada kegiatan aktif atau terencana saat ini.
             </div>
           )}
-        </div>
-      </div>
-      {/* Jadwal Kegiatan */}
-      <div className="bg-gray-800 py-10 px-4">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-extrabold text-white text-center mb-10">
-            Jadwal Kegiatan
-          </h1>
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200">
-            <img
-              src="https://cms.disway.id/uploads/b408d5f5aa0a279b4eaff61b6d089614.png"
-              alt="Kalender Kegiatan"
-              className="w-full h-auto object-cover"
-            />
-          </div>
         </div>
       </div>
       {/* Galeri Kegiatan */}

@@ -7,7 +7,6 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 export default function Login() {
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -20,8 +19,8 @@ export default function Login() {
     try {
       const res = await signIn("credentials", {
         email,
-        password, 
-        redirect:false
+        password,
+        redirect: false,
       });
 
       if (res.error) {
@@ -50,20 +49,20 @@ export default function Login() {
         <div className="w-125 flex items-center justify-center bg-yellow-50 rounded-r-md">
           <div className="w-90 h-90  ">
             <h1 className="text-center font-extrabold text-3xl mb-2 text-gray-700">
-              SIGN IN
+              LOGIN
             </h1>
             <p className="text-md text-center mb-10 text-gray-500">
-              Enter your email to sign in.
+              Enter your email to login.
             </p>
             <form onSubmit={handleSubmit} action="">
               <input
-              onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 type="text"
                 className="text-gray-500 w-full mb-5 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-300 bg-white"
                 placeholder="Email"
               ></input>
               <input
-              onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => setPassword(e.target.value)}
                 type="password"
                 className="text-gray-500 w-full mb-2 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-300 bg-white"
                 placeholder="Password"
@@ -72,12 +71,9 @@ export default function Login() {
                 className="bg-amber-500 w-full px-2 py-2 rounded-md mt-3 text-white text-medium hover:bg-amber-400 cursor-pointer"
                 type="submit"
               >
-                Sign In
+                Login
               </button>
-              {error && (
-                <div className="text-red-500 mt-2">{error}</div>
-              )}
-              
+              {error && <div className="text-red-500 mt-2">{error}</div>}
             </form>
             <p className="text-right text-gray-500 mt-5 text-sm">
               Don't have an account?

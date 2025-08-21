@@ -6,7 +6,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function RegisterForm() {
-
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,7 +25,6 @@ export default function RegisterForm() {
 
     try {
 
-      // meminta ke API backend mengecek email apakah sudah di isi!
       const resUserExists = await fetch("/api/userExists", {
         method: "POST", // metode POST untuk mengirim data di body
         headers: {
@@ -44,16 +42,19 @@ export default function RegisterForm() {
         return;
       }
 
-      //Jika pengguna belum ada, lanjut ke proses pendaftaran
-      const res = await fetch('/api/register', {
+
+      const res = await fetch("/api/register", {
+
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name, email, password
-        })
-      })
+          name,
+          email,
+          password,
+        }),
+      });
 
       // Memeriksa apakah pendaftaran di backend berhasil
       if (res.ok) {
@@ -67,19 +68,19 @@ export default function RegisterForm() {
       console.log("Error during registration: ", error);
     }
   };
- 
+
   return (
     <div className="bg-gray-200 min-h-screen flex items-center justify-center">
       <div className="bg-white w-250 h-125 flex shadow-md rounded-md">
         <div className="w-125 flex items-center justify-center bg-yellow-50 rounded-l-md">
           <div className="w-90 h-100">
             <h1 className="text-center font-extrabold text-3xl mb-2 text-gray-700">
-              SIGN UP
+              REGISTER
             </h1>
             <p className="text-md text-center mb-7 text-gray-500">
-              Enter your email to sign up.
+              Enter your email to register.
             </p>
-            <form onSubmit={handleSubmit} >
+            <form onSubmit={handleSubmit}>
               <input
                 onChange={(e) => setName(e.target.value)}
                 type="text"
@@ -87,7 +88,7 @@ export default function RegisterForm() {
                 placeholder="Username"
               />
               <input
-              onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 type="email"
                 className="text-gray-500 w-full mb-3 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-300 bg-white"
                 placeholder="Email"
@@ -98,14 +99,11 @@ export default function RegisterForm() {
                 className="text-gray-500 w-full mb-3 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-300 bg-white"
                 placeholder="Password"
               />
-              <button
-                className="bg-amber-500 w-full px-2 py-2 rounded-md mt-3 text-white text-medium hover:bg-amber-400 cursor-pointer">
-                Sign Up
+              <button className="bg-amber-500 w-full px-2 py-2 rounded-md mt-3 text-white text-medium hover:bg-amber-400 cursor-pointer">
+                Register
               </button>
 
-              { error && (
-              <div className="text-red-500 mt-2"> {error} </div>
-              )}
+              {error && <div className="text-red-500 mt-2"> {error} </div>}
             </form>
             <p className="text-right text-gray-500 text-sm mt-5">
               Already have an account?{" "}
@@ -113,7 +111,7 @@ export default function RegisterForm() {
                 href={"/admin/auth/login"}
                 className="text-blue-500 underline"
               >
-                Sign in
+                Login
               </Link>
             </p>
           </div>

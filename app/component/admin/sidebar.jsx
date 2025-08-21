@@ -2,14 +2,39 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
-
+import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
+import { useEffect } from "react";
 
 export default function Sidebar() {
   const inactiveLink = "flex gap-2 py-2 px-7";
   const activeLink = inactiveLink + " bg-amber-500 rounded-md font-medium";
   const pathname = usePathname();
+  const router = useRouter();
+
+  // Fungsi untuk menangani proses logout secara lengkap
+  const handleLogout = async () => {
+    // 1. Hapus Session atau Token (ditangani oleh next-auth)
+    // 2. Hapus Data Lokal yang di-cache
+    localStorage.clear();
+
+    // Lakukan proses signOut dan arahkan ke halaman login
+    await signOut({ redirect: false });
+
+    // 3. Lindungi dari Back Button dengan mengarahkan secara manual
+    // Menggunakan router.replace() untuk mencegah pengguna kembali ke halaman admin
+    router.replace("/admin/auth/login");
+  };
+
+  // Efek samping untuk mencegah caching halaman setelah logout
+  useEffect(() => {
+    // Dengan mengosongkan riwayat, tombol back tidak akan berfungsi
+    // Namun, cara ini tidak sepenuhnya efektif di semua browser.
+    // Metode router.replace() di atas lebih disarankan.
+    if (pathname === "/admin/auth/login") {
+      window.history.replaceState(null, "", "/admin/auth/login");
+    }
+  }, [pathname]);
 
   return (
     <aside className="w-65 items-center flex flex-col bg-white">
@@ -85,20 +110,8 @@ export default function Sidebar() {
           ></Image>
           Pengumuman
         </Link>
-        <Link
-          href={"/admin/laporan"}
-          className={pathname.includes("/laporan") ? activeLink : inactiveLink}
-        >
-          <Image
-            src="/icons/clipboard.svg"
-            alt="laporan"
-            width={22}
-            height={22}
-          ></Image>
-          Laporan
-        </Link>
         <button
-          onClick={() => signOut()}
+          onClick={handleLogout}
           className={`${
             pathname.includes("/login") ? activeLink : inactiveLink
           } mt-130 text-red-600 font-semibold cursor-pointer hover:text-red-700  py-1.5 px-5 fixed hover:bg-red-50 rounded-md transition-all duration-200 group border border-red-100 hover:border-red-200`}
